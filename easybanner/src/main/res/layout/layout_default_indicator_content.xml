@@ -11,8 +11,7 @@
     <LinearLayout
         android:id="@+id/layout_image_indicator"
         android:layout_width="0dp"
-        android:layout_height="44dp"
-        android:padding="8dp"
+        android:layout_height="40dp"
         android:orientation="horizontal"
         android:gravity="center"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,25 +20,23 @@
 
     <TextView
         android:id="@+id/txt_num_indicator"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="8dp"
         android:text="1/5"
         android:gravity="center"
         android:background="@drawable/num_indicator_background"
         android:textSize="18sp"
         android:textColor="@android:color/white"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <TextView
         android:id="@+id/txt_title"
         android:layout_width="0dp"
-        android:layout_height="44dp"
+        android:layout_height="40dp"
         android:padding="8dp"
-        android:text="Hello World!"
         android:gravity="center"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

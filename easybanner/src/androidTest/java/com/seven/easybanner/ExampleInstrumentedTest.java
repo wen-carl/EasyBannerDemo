@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.seven.easybannerjar.test", appContext.getPackageName());
+        assertEquals("com.seven.easybanner.test", appContext.getPackageName());
     }
 }

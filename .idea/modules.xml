@@ -4,7 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/EasyBannerDemo.iml" filepath="$PROJECT_DIR$/EasyBannerDemo.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/easybannerjar/easybanner.iml" filepath="$PROJECT_DIR$/easybannerjar/easybanner.iml" />
+      <module fileurl="file://$PROJECT_DIR$/easybanner/easybanner.iml" filepath="$PROJECT_DIR$/easybanner/easybanner.iml" />
     </modules>
   </component>
 </project>

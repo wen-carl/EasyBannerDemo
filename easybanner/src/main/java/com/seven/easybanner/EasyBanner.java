@@ -1,10 +1,12 @@
 package com.seven.easybanner;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -17,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -239,11 +242,28 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         return this;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public EasyBanner setPageTransformer(Class<? extends PageTransformer> transformer) {
         try {
             mViewPager.setPageTransformer(true, transformer.newInstance());
         } catch (InstantiationException | IllegalAccessException e) {
             Log.e(TAG, e.getLocalizedMessage(), e);
+        }
+
+        return this;
+    }
+
+    public EasyBanner setPageTransformer(PageTransformer transformer) {
+        mViewPager.setPageTransformer(true, transformer);
+
+        return this;
+    }
+
+    public EasyBanner setOnBannerItemClickListener(OnBannerItemClickListener listener) {
+        if (null != mAdapter) {
+            mAdapter.setOnBannerItemClickListener(listener);
+        } else {
+            throw new IllegalStateException("setOnBannerItemClickListener must called after setAdapter()");
         }
 
         return this;
@@ -385,9 +405,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 mNumIndicator.setVisibility(VISIBLE);
                 mTitleIndicator.setVisibility(VISIBLE);
     
-                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(mCircleIndicator.getLayoutParams());
-                params.startToStart = R.id.indicator_layout;
-                params.endToEnd = R.id.indicator_layout;
+                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(mNumIndicator.getLayoutParams());
                 params.bottomToTop = R.id.txt_title;
                 mNumIndicator.setLayoutParams(params);
     
@@ -467,9 +485,10 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 initView();
                 mStatus = isAutoPlay ? STATUS_AUTO_PLAYING : STATUS_MANUAL_LAYING;
                 break;
-            case STATUS_AUTO_PLAYING:
             case STATUS_PAUSED:
             case STATUS_STOPPED:
+                mStatus = isAutoPlay ? STATUS_AUTO_PLAYING : mStatus;
+            case STATUS_AUTO_PLAYING:
                 shouldStart &= true;
                 break;
             case STATUS_MANUAL_LAYING:
@@ -565,6 +584,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
 
     public static abstract class BaseAdapter<T extends DataModel> extends PagerAdapter {
 
+        private static final int TAG_KEY = -100;
         private static final int DEFAULT_TYPE = -1;
         private static final int KEY_UNUSED = -1;
 
@@ -573,7 +593,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         private List<T> mMockData;
 
         private HashMap<Number, HashMap<Number, View>> mCachedViewHolders = new HashMap<>();
-        private HashMap<Number, View> mShowingViewHolders = new HashMap<>();
+        //private HashMap<Number, View> mShowingViewHolders = new HashMap<>();
 
         private OnBannerItemClickListener mOnClickListener;
         private OnBannerItemLongClickListener mOnLongClickListener;
@@ -587,7 +607,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
 
             int type = getViewType(position);
-            HashMap<Number, View> tempMap = mCachedViewHolders.get(position);
+            HashMap<Number, View> tempMap = mCachedViewHolders.get(type);
 
             View view = null;
             if (null != tempMap) {
@@ -602,8 +622,8 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
             container.addView(view);
             onDisplay(view, getRealPosition(position), mMockData.get(position));
 
-            mShowingViewHolders.put(position, view);
-            view.setTag(getRealPosition(position));
+            //mShowingViewHolders.put(position, view);
+            view.setTag(TAG_KEY, getRealPosition(position));
             setClickListener(view);
 
             return view;
@@ -613,7 +633,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             View view = (View) object;
             container.removeView(view);
-            mShowingViewHolders.remove(position);
+            //mShowingViewHolders.remove(position);
 
             int type = getViewType(position);
             HashMap<Number, View> tempMap = mCachedViewHolders.get(type);
@@ -667,7 +687,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                     view.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            final int position = (int)view.getTag();
+                            final int position = (int)view.getTag(TAG_KEY);
                             mOnClickListener.onBannerClicked(v, position, mData.get(position));
                         }
                     });
