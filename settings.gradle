@@ -1,0 +1,2 @@
+include ':app', ':easybanner'
+project(':easybanner').projectDir = new File('easybannerjar')
