@@ -25,5 +25,4 @@ public class AccordionTransformer extends ABaseTransformer {
 		view.setPivotX(position < 0 ? 0 : view.getWidth());
 		view.setScaleX(position < 0 ? 1f + position : 1f - position);
 	}
-
 }

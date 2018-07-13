@@ -1,8 +1,9 @@
 package com.seven.easybannerdemo;
 
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -48,6 +49,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initData();
         mBanner = findViewById(R.id.easy_banner);
         mBanner.setAdapter(new ImageBannerAdapter<DataModel>(mModels, this))
+                .setAutoPlay(true)
+                .setIndicatorStyle(EasyBanner.STYLE_IMAGE_INDICATOR)
+                .setPageTransformer(new MyTransformer())
                 .setOnBannerItemClickListener(this)
                 .start();
 
@@ -59,14 +63,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String styleStr = mStyles.get(position);
                 int style;
                 switch (styleStr) {
-                    case "STYLE_CIRCLE_INDICATOR":
-                        style = EasyBanner.STYLE_CIRCLE_INDICATOR;
+                    case "STYLE_IMAGE_INDICATOR":
+                        style = EasyBanner.STYLE_IMAGE_INDICATOR;
                         break;
-                    case "STYLE_TITLE_WITH_CIRCLE_INDICATOR_INSIDE":
-                        style = EasyBanner.STYLE_TITLE_WITH_CIRCLE_INDICATOR_INSIDE;
+                    case "STYLE_TITLE_WITH_IMAGE_INDICATOR_INSIDE":
+                        style = EasyBanner.STYLE_TITLE_WITH_IMAGE_INDICATOR_INSIDE;
                         break;
-                    case "STYLE_TITLE_WITH_CIRCLE_INDICATOR_OUTSIDE":
-                        style = EasyBanner.STYLE_TITLE_WITH_CIRCLE_INDICATOR_OUTSIDE;
+                    case "STYLE_TITLE_WITH_IMAGE_INDICATOR_OUTSIDE":
+                        style = EasyBanner.STYLE_TITLE_WITH_IMAGE_INDICATOR_OUTSIDE;
                         break;
                     case "STYLE_NUM_INDICATOR":
                         style = EasyBanner.STYLE_NUM_INDICATOR;
@@ -155,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                 }
 
-                mBanner.setPageTransformer(trans);
+                //mBanner.setPageTransformer(trans);
             }
 
             @Override
@@ -193,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void load(@NonNull ImageView imageView, int position, @NonNull DataModel model) {
-        Glide.with(this)
+        Glide.with(imageView.getContext())
                 .load(model.getUrl())
                 .into(imageView);
     }
@@ -208,14 +212,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mModels.add(new DataModel("4", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic2e7vsaj30ci08cglz.jpg"));
 
         mStyles = new ArrayList<>();
-        mStyles.add("STYLE_NONE");
-        mStyles.add("STYLE_CIRCLE_INDICATOR");
-        mStyles.add("STYLE_TITLE_WITH_CIRCLE_INDICATOR_INSIDE");
-        mStyles.add("STYLE_TITLE_WITH_CIRCLE_INDICATOR_OUTSIDE");
+        mStyles.add("STYLE_IMAGE_INDICATOR");
+        mStyles.add("STYLE_TITLE_WITH_IMAGE_INDICATOR_INSIDE");
+        mStyles.add("STYLE_TITLE_WITH_IMAGE_INDICATOR_OUTSIDE");
         mStyles.add("STYLE_NUM_INDICATOR");
         mStyles.add("STYLE_TITLE_WITH_NUM_INDICATOR_INSIDE");
         mStyles.add("STYLE_TITLE_WITH_NUM_INDICATOR_OUTSIDE");
         mStyles.add("STYLE_TITLE");
+        mStyles.add("STYLE_NONE");
 
         mTrans = new ArrayList<>();
         mTrans.add("Default");
@@ -240,5 +244,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onBannerClicked(@NonNull View view, int position, @NonNull DataModel model) {
         Toast.makeText(this, model.getDescription() + " position: " + position, Toast.LENGTH_SHORT).show();
+    }
+
+    private class MyTransformer implements ViewPager.PageTransformer {
+
+        @Override
+        public void transformPage(@NonNull View page, float position) {
+            final float scale = position < 0 ? position + 1f : Math.abs(1f - position);
+            page.setScaleX(scale);
+            page.setScaleY(scale);
+            page.setPivotX(page.getWidth() * 0.5f);
+            page.setPivotY(page.getHeight() * 0.5f);
+            page.setAlpha(position < -1f || position > 1f ? 0f : 1f - (scale - 1f));
+        }
     }
 }

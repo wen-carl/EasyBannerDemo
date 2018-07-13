@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="EasyBanner">
+        <attr name="auto_play" format="boolean"/>
+        <attr name="time_interval" format="integer"/>
+        <attr name="direction" format="enum">
+            <enum name="positive" value="0"/>
+            <enum name="negative" value="1"/>
+        </attr>
+        <attr name="indicator_style" format="enum">
+            <enum name="none" value="0"/>
+            <enum name="image_indicator" value="1"/>
+            <enum name="num_indicator" value="2"/>
+            <enum name="title" value="3"/>
+            <enum name="title_with_image_indicator_inside" value="10"/>
+            <enum name="title_with_image_indicator_outside" value="11"/>
+            <enum name="title_with_num_indicator_inside" value="12"/>
+            <enum name="title_with_num_indicator_outside" value="13"/>
+        </attr>
+        <attr name="indicator_gravity" format="enum">
+            <enum name="start" value="8388627"/>
+            <enum name="center" value="17"/>
+            <enum name="end" value="8388629"/>
+        </attr>
+        <attr name="title_gravity" format="enum">
+            <enum name="start" value="0"/>
+            <enum name="center" value="1"/>
+            <enum name="end" value="2"/>
+        </attr>
+        <attr name="indicator_mode" format="enum">
+            <enum name="mode_default" value="0"/>
+            <enum name="mode_custom" value="1"/>
+        </attr>
+        <attr name="indicator_background" format="color|reference"/>
+        <attr name="indicator_image_background" format="color|reference"/>
+        <attr name="indicator_image_state_background" format="color|reference"/>
+        <attr name="indicator_image_width" format="dimension"/>
+        <attr name="indicator_image_height" format="dimension"/>
+        <attr name="indicator_image_margin" format="dimension"/>
+        <attr name="indicator_image_margin_vertical" format="dimension"/>
+        <attr name="indicator_image_margin_horizontal" format="dimension"/>
+        <attr name="indicator_num_background" format="color|reference"/>
+        <attr name="indicator_num_text_color" format="color"/>
+        <attr name="indicator_num_text_size" format="dimension"/>
+        <attr name="title_background" format="color|reference"/>
+        <attr name="title_text_size" format="dimension"/>
+        <attr name="title_text_color" format="color"/>
+        <attr name="title_text_line" format="integer"/>
+    </declare-styleable>
+</resources>

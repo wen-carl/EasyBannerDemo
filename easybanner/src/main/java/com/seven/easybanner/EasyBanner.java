@@ -19,7 +19,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -88,33 +87,63 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     private @interface IndicatorMode {}
 
     /**
+     * Indicator Gravity
+     */
+    // Gravity.START | Gravity.CENTER_VERTICAL
+    public static final int GRAVITY_START = 8388627;
+    // Gravity.CENTER
+    public static final int GRAVITY_CENTER = 17;
+    // Gravity.END| Gravity.CENTER_VERTICAL
+    public static final int GRAVITY_END = 8388629;
+
+    @IntDef({GRAVITY_START, GRAVITY_CENTER, GRAVITY_END})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface IndicatorGravity {}
+
+    /**
      * Image banner style
      */
     public static final int STYLE_NONE = 0;
-    public static final int STYLE_CIRCLE_INDICATOR = 1;
-    public static final int STYLE_TITLE_WITH_CIRCLE_INDICATOR_INSIDE = 2;
-    public static final int STYLE_TITLE_WITH_CIRCLE_INDICATOR_OUTSIDE = 3;
-    public static final int STYLE_NUM_INDICATOR = 10;
-    public static final int STYLE_TITLE_WITH_NUM_INDICATOR_INSIDE = 11;
-    public static final int STYLE_TITLE_WITH_NUM_INDICATOR_OUTSIDE = 12;
-    public static final int STYLE_TITLE = 20;
+    public static final int STYLE_IMAGE_INDICATOR = 1;
+    public static final int STYLE_NUM_INDICATOR = 2;
+    public static final int STYLE_TITLE = 3;
+    public static final int STYLE_TITLE_WITH_IMAGE_INDICATOR_INSIDE = 10;
+    public static final int STYLE_TITLE_WITH_IMAGE_INDICATOR_OUTSIDE = 11;
+    public static final int STYLE_TITLE_WITH_NUM_INDICATOR_INSIDE = 12;
+    public static final int STYLE_TITLE_WITH_NUM_INDICATOR_OUTSIDE = 13;
 
-    @IntDef({STYLE_NONE, STYLE_CIRCLE_INDICATOR, STYLE_TITLE_WITH_CIRCLE_INDICATOR_INSIDE, STYLE_TITLE_WITH_CIRCLE_INDICATOR_OUTSIDE, STYLE_NUM_INDICATOR, STYLE_TITLE_WITH_NUM_INDICATOR_INSIDE, STYLE_TITLE_WITH_NUM_INDICATOR_OUTSIDE, STYLE_TITLE})
+    @IntDef({STYLE_NONE, STYLE_IMAGE_INDICATOR, STYLE_TITLE_WITH_IMAGE_INDICATOR_INSIDE, STYLE_TITLE_WITH_IMAGE_INDICATOR_OUTSIDE, STYLE_NUM_INDICATOR, STYLE_TITLE_WITH_NUM_INDICATOR_INSIDE, STYLE_TITLE_WITH_NUM_INDICATOR_OUTSIDE, STYLE_TITLE})
     @Retention(RetentionPolicy.SOURCE)
     private @interface IndicatorStyle {}
 
     private ViewPager mViewPager;
     private BaseAdapter mAdapter;
+    private @BannerStatus int mStatus = STATUS_NOT_START;
     private boolean isAutoPlay = true;
     private long mTimeInterval = 2000L;
     private @IndicatorMode int mIndicatorMode = MODE_DEFAULT;
-    private @BannerStatus int mStatus = STATUS_NOT_START;
     private @Direction int mDirection = DIRECTION_POSITIVE;
-    private @IndicatorStyle int mIndicatorStyle = STYLE_CIRCLE_INDICATOR;
+    private @IndicatorStyle int mIndicatorStyle = STYLE_IMAGE_INDICATOR;
+    private @IndicatorGravity int mImageIndicatorGravity = GRAVITY_CENTER;
+    private @IndicatorGravity int mTitleIndicatorGravity = GRAVITY_CENTER;
+    private int mIndicatorBackground;
+    private int mImageIndicatorBackground;
+    private int mImageIndicatorStateBackground;
+    private int mImageIndicatorWidth;
+    private int mImageIndicatorHeight;
+    private int mImageIndicatorMarginVertical;
+    private int mImageIndicatorMarginHorizontal;
+    private int mNumIndicatorBackground;
+    private int mNumIndicatorTextColor;
+    private int mNumIndicatorTextSize;
+    private int mTitleIndicatorBackground;
+    private int mTitleIndicatorTextSize;
+    private int mTitleIndicatorTextColor;
+    private int mTitleIndicatorTextLine;
 
     private static final int BASE_INDICATOR_ID = 1000;
     private View mIndicatorView;
-    private LinearLayout mCircleIndicator;
+    private LinearLayout mImageIndicator;
     private TextView mNumIndicator;
     private TextView mTitleIndicator;
 
@@ -139,7 +168,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     public EasyBanner(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        ViewGroup mainContent = (ViewGroup) LayoutInflater.from(getContext()).inflate(R.layout.layout_easy_banner_java, this, true);
+        ViewGroup mainContent = (ViewGroup) LayoutInflater.from(getContext()).inflate(R.layout.layout_easy_banner, this, true);
         mViewPager = mainContent.findViewById(R.id.banner_view_pager);
         mViewPager.addOnPageChangeListener(this);
     }
@@ -245,9 +274,10 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public EasyBanner setPageTransformer(Class<? extends PageTransformer> transformer) {
         try {
-            mViewPager.setPageTransformer(true, transformer.newInstance());
+            PageTransformer former = transformer.newInstance();
+            setPageTransformer(former);
         } catch (InstantiationException | IllegalAccessException e) {
-            Log.e(TAG, e.getLocalizedMessage(), e);
+            Log.e(TAG, "setPageTransformer: " + e.getLocalizedMessage(), e);
         }
 
         return this;
@@ -255,6 +285,11 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
 
     public EasyBanner setPageTransformer(PageTransformer transformer) {
         mViewPager.setPageTransformer(true, transformer);
+        return setPageTransformer(true, transformer);
+    }
+
+    public EasyBanner setPageTransformer(boolean reverseDrawingOrder, PageTransformer transformer) {
+        mViewPager.setPageTransformer(reverseDrawingOrder, transformer);
 
         return this;
     }
@@ -273,6 +308,32 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     public int getStatus() {
         return mStatus;
     }
+    
+    public EasyBanner setImageIndicatorGravity(@IndicatorGravity int gravity) {
+        
+        if (null != mImageIndicator) {
+            mImageIndicator.setGravity(gravity);
+        }
+        
+        return this;
+    }
+
+    public EasyBanner setTitleIndicatorGravity(@IndicatorGravity int gravity) {
+        
+        if (null != mTitleIndicator) {
+            mTitleIndicator.setGravity(gravity);
+        }
+        
+        return this;
+    }
+
+    public TextView getNumIndicator() {
+        return mNumIndicator;
+    }
+
+    public TextView getTitleIndicator() {
+        return mTitleIndicator;
+    }
 
     private void initView() {
         ConstraintLayout superLayout = findViewById(R.id.mainContent);
@@ -284,19 +345,20 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         mIndicatorView.setLayoutParams(layoutParams);
 
         superLayout.addView(mIndicatorView);
-        mCircleIndicator = mIndicatorView.findViewById(R.id.layout_image_indicator);
+        mImageIndicator = mIndicatorView.findViewById(R.id.layout_image_indicator);
         mNumIndicator = mIndicatorView.findViewById(R.id.txt_num_indicator);
         mTitleIndicator = mIndicatorView.findViewById(R.id.txt_title);
         updateIndicatorByPositionByStyle();
         createCircleIndicator();
+        show(mCurrentIndex);
     }
 
     private void createCircleIndicator() {
-        if (null == mCircleIndicator) {
+        if (null == mImageIndicator) {
             return;
         }
 
-        mCircleIndicator.removeAllViews();
+        mImageIndicator.removeAllViews();
         DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
         int indicatorSize = dm.widthPixels / 80;
 
@@ -308,29 +370,30 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
             params.rightMargin = 5;
             iv.setLayoutParams(params);
             iv.setImageResource(R.drawable.circle_indicator_background);
-            iv.setSelected(i == mAdapter.getRealPosition(mCurrentIndex));
+            iv.setSelected(false);
             iv.setId(BASE_INDICATOR_ID + i);
-            mCircleIndicator.addView(iv);
+            mImageIndicator.addView(iv);
         }
     }
     
     private void updateIndicatorByPositionByStyle() {
-        if (null == mCircleIndicator || null == mNumIndicator || null == mTitleIndicator) {
+        if (null == mImageIndicator || null == mNumIndicator || null == mTitleIndicator) {
             return;
         }
         
-        mCircleIndicator.setVisibility(GONE);
+        mImageIndicator.setVisibility(GONE);
         mNumIndicator.setVisibility(GONE);
         mTitleIndicator.setVisibility(GONE);
-        
+        updateIndicatorIndex(mCurrentIndex);
+
         switch (mIndicatorStyle) {
-            case STYLE_CIRCLE_INDICATOR: {
-                mCircleIndicator.setVisibility(VISIBLE);
-                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(mCircleIndicator.getLayoutParams());
+            case STYLE_IMAGE_INDICATOR: {
+                mImageIndicator.setVisibility(VISIBLE);
+                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(mImageIndicator.getLayoutParams());
                 params.startToStart = R.id.indicator_layout;
                 params.endToEnd = R.id.indicator_layout;
                 params.bottomToBottom = R.id.indicator_layout;
-                mCircleIndicator.setLayoutParams(params);
+                mImageIndicator.setLayoutParams(params);
             }
                 break;
             case STYLE_NUM_INDICATOR: {
@@ -352,14 +415,14 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 mTitleIndicator.setLayoutParams(params);
             }
                 break;
-            case STYLE_TITLE_WITH_CIRCLE_INDICATOR_INSIDE: {
-                mCircleIndicator.setVisibility(VISIBLE);
+            case STYLE_TITLE_WITH_IMAGE_INDICATOR_INSIDE: {
+                mImageIndicator.setVisibility(VISIBLE);
                 mTitleIndicator.setVisibility(VISIBLE);
     
-                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(mCircleIndicator.getLayoutParams());
+                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(mImageIndicator.getLayoutParams());
                 params.endToEnd = R.id.indicator_layout;
                 params.bottomToBottom = R.id.indicator_layout;
-                mCircleIndicator.setLayoutParams(params);
+                mImageIndicator.setLayoutParams(params);
     
                 ConstraintLayout.LayoutParams titleParams = new ConstraintLayout.LayoutParams(mTitleIndicator.getLayoutParams());
                 titleParams.startToStart = R.id.indicator_layout;
@@ -368,15 +431,15 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 mTitleIndicator.setLayoutParams(titleParams);
             }
                 break;
-            case STYLE_TITLE_WITH_CIRCLE_INDICATOR_OUTSIDE: {
-                mCircleIndicator.setVisibility(VISIBLE);
+            case STYLE_TITLE_WITH_IMAGE_INDICATOR_OUTSIDE: {
+                mImageIndicator.setVisibility(VISIBLE);
                 mTitleIndicator.setVisibility(VISIBLE);
                 
-                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(mCircleIndicator.getLayoutParams());
+                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(mImageIndicator.getLayoutParams());
                 params.startToStart = R.id.indicator_layout;
                 params.endToEnd = R.id.indicator_layout;
                 params.bottomToTop = R.id.txt_title;
-                mCircleIndicator.setLayoutParams(params);
+                mImageIndicator.setLayoutParams(params);
                 
                 ConstraintLayout.LayoutParams titleParams = new ConstraintLayout.LayoutParams(mTitleIndicator.getLayoutParams());
                 titleParams.startToStart = R.id.indicator_layout;
@@ -424,39 +487,37 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
 
     private void updateIndicatorIndex(int position) {
         int realPos = mAdapter.getRealPosition(position);
-        if (realPos != mAdapter.getRealPosition(mCurrentIndex)) {
-            switch (mIndicatorStyle) {
-                case STYLE_TITLE_WITH_CIRCLE_INDICATOR_INSIDE:
-                case STYLE_TITLE_WITH_CIRCLE_INDICATOR_OUTSIDE:
-                    updateTitleIndicator(realPos);
-                case STYLE_CIRCLE_INDICATOR:
-                    updateCircleIndicator(realPos);
-                    break;
-                case STYLE_TITLE_WITH_NUM_INDICATOR_INSIDE:
-                case STYLE_TITLE_WITH_NUM_INDICATOR_OUTSIDE:
-                    updateTitleIndicator(realPos);
-                case STYLE_NUM_INDICATOR:
-                    updateNumIndicator(realPos);
-                    break;
-                case STYLE_TITLE:
-                    updateTitleIndicator(realPos);
-                case STYLE_NONE:
-                default:
-                    break;
-            }
+        switch (mIndicatorStyle) {
+            case STYLE_TITLE_WITH_IMAGE_INDICATOR_INSIDE:
+            case STYLE_TITLE_WITH_IMAGE_INDICATOR_OUTSIDE:
+                updateTitleIndicator(realPos);
+            case STYLE_IMAGE_INDICATOR:
+                updateCircleIndicator(realPos);
+                break;
+            case STYLE_TITLE_WITH_NUM_INDICATOR_INSIDE:
+            case STYLE_TITLE_WITH_NUM_INDICATOR_OUTSIDE:
+                updateTitleIndicator(realPos);
+            case STYLE_NUM_INDICATOR:
+                updateNumIndicator(realPos);
+                break;
+            case STYLE_TITLE:
+                updateTitleIndicator(realPos);
+            case STYLE_NONE:
+            default:
+                break;
         }
         
         mCurrentIndex = position;
     }
     
     private void updateCircleIndicator(int realPos) {
-        if (null != mCircleIndicator) {
-            ImageView cancel = mCircleIndicator.findViewById(BASE_INDICATOR_ID + mAdapter.getRealPosition(mCurrentIndex));
+        if (null != mImageIndicator) {
+            ImageView cancel = mImageIndicator.findViewById(BASE_INDICATOR_ID + mAdapter.getRealPosition(mCurrentIndex));
             if (null != cancel) {
                 cancel.setSelected(false);
             }
         
-            ImageView select = mCircleIndicator.findViewById(BASE_INDICATOR_ID + realPos);
+            ImageView select = mImageIndicator.findViewById(BASE_INDICATOR_ID + realPos);
             if (null != select) {
                 select.setSelected(true);
             }
@@ -487,7 +548,9 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 break;
             case STATUS_PAUSED:
             case STATUS_STOPPED:
-                mStatus = isAutoPlay ? STATUS_AUTO_PLAYING : mStatus;
+                if (isAutoPlay) {
+                    mStatus = STATUS_AUTO_PLAYING;
+                }
             case STATUS_AUTO_PLAYING:
                 shouldStart &= true;
                 break;
@@ -528,31 +591,51 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     }
 
     public void showPrevious() {
-        int index = mCurrentIndex == 0 ? mAdapter.getData().size() : mCurrentIndex - 1;
+        int index;
+        if (mCurrentIndex <= 0) {
+            index = mAdapter.getData().size();
+        } else {
+            index = mCurrentIndex - 1;
+        }
         show(index);
     }
 
     public void showNext() {
-        int index = mCurrentIndex == mAdapter.getData().size() + 1 ? 1 : mCurrentIndex + 1;
+        int index;
+        if (mCurrentIndex >= mAdapter.getData().size() + 1) {
+            index = 1;
+        } else {
+            index = mCurrentIndex + 1;
+        }
         show(index);
     }
 
     public void show(int index) {
-        int temp = index <= 0 ? 0 : (index <= mAdapter.getData().size() + 1 ? index : mAdapter.getData().size() + 1);
+        int temp;
+        if (index <= 0) {
+            temp = 0;
+        } else if (index <= mAdapter.getData().size() + 1) {
+            temp = index;
+        } else {
+            temp = mAdapter.getData().size() + 1;
+        }
         mViewPager.setCurrentItem(temp);
     }
 
     public void onPageScrollStateChanged(int state) {
         switch(state) {
-            case 0:
-            case 1:
+            case ViewPager.SCROLL_STATE_IDLE:
+            case ViewPager.SCROLL_STATE_DRAGGING:
                 if (mCurrentIndex == 0) {
                     mViewPager.setCurrentItem(mAdapter.getData().size(), false);
                 } else if (mCurrentIndex == mAdapter.getData().size() + 1) {
                     mViewPager.setCurrentItem(1, false);
                 }
-            case 2:
+                Log.i(TAG, "onPageScrollStateChanged mCurrentIndex: " + mCurrentIndex);
+                break;
+            case ViewPager.SCROLL_STATE_SETTLING:
             default:
+                break;
         }
     }
 
@@ -561,6 +644,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
 
     public void onPageSelected(int position) {
         updateIndicatorIndex(position);
+        Log.i(TAG, "onPageSelected position: " + position);
     }
 
     /**
@@ -593,7 +677,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         private List<T> mMockData;
 
         private HashMap<Number, HashMap<Number, View>> mCachedViewHolders = new HashMap<>();
-        //private HashMap<Number, View> mShowingViewHolders = new HashMap<>();
+        private HashMap<Number, View> mShowingViewHolders = new HashMap<>();
 
         private OnBannerItemClickListener mOnClickListener;
         private OnBannerItemLongClickListener mOnLongClickListener;
@@ -622,7 +706,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
             container.addView(view);
             onDisplay(view, getRealPosition(position), mMockData.get(position));
 
-            //mShowingViewHolders.put(position, view);
+			mShowingViewHolders.put(position, view);
             view.setTag(TAG_KEY, getRealPosition(position));
             setClickListener(view);
 
@@ -633,15 +717,14 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             View view = (View) object;
             container.removeView(view);
-            //mShowingViewHolders.remove(position);
-
+            mShowingViewHolders.remove(position);
             int type = getViewType(position);
             HashMap<Number, View> tempMap = mCachedViewHolders.get(type);
             if (null == tempMap) {
                 tempMap = new HashMap<>();
-                mCachedViewHolders.put(KEY_UNUSED, tempMap);
+                mCachedViewHolders.put(type, tempMap);
             }
-            tempMap.put(type, view);
+            tempMap.put(KEY_UNUSED, view);
         }
 
         @Override
@@ -664,7 +747,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         abstract public void onDisplay(@NonNull View view, int position, @NonNull T model);
 
         public View onCreateIndicatorLayout(@NonNull ViewGroup parent, int position, int viewType) {
-            return LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_default_indicator_content, parent, false);
+            return LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_default_indicator, parent, false);
         }
 
         public final void bindIndicator(@NonNull View view, int position) {
@@ -745,83 +828,6 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         public List<T> getData() {
             return mData;
         }
-
-    /*
-    fun add(index: Int, model: T) {
-        val temp = mData.toMutableList()
-        temp.add(index, model)
-        this.mData = temp.toList()
-    }
-
-    fun add(model: T) : Boolean {
-        val temp = mData.toMutableList()
-        val result = temp.add(model)
-        if (result) {
-            this.mData = temp.toList()
-        }
-
-        return result
-    }
-
-    fun add(index: Int, list: List<T>) : Boolean {
-        val temp = mData.toMutableList()
-        val result = temp.addAll(index, list)
-        if (result) {
-            this.mData = temp.toList()
-        }
-
-        return result
-    }
-
-    fun add(list: List<T>) : Boolean {
-        val temp = mData.toMutableList()
-        val result = temp.addAll(list)
-        if (result) {
-            this.mData = temp.toList()
-        }
-
-        return result
-    }
-
-    fun remove(index: Int) : T {
-        val temp = mData.toMutableList()
-        val result = temp.removeAt(index)
-        this.mData = temp.toList()
-
-        return result
-    }
-
-    fun remove(list: List<T>) : Boolean {
-        val temp = mData.toMutableList()
-        val result = temp.removeAll(list)
-        if (result) {
-            this.mData = temp.toList()
-        }
-
-        return result
-    }
-
-    fun clear() {
-        val temp = mData.toMutableList()
-        val result = temp.clear()
-        this.mData = temp.toList()
-
-        return result
-    }
-    */
-
-    /*
-    public static class ViewHolder {
-        public int position = -1;
-        public View itemView;
-
-        public ViewHolder() {}
-
-        public ViewHolder(View itemView) {
-            this.itemView = itemView;
-        }
-    }
-    */
     }
 
     public interface OnBannerItemClickListener {

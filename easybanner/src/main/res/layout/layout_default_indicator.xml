@@ -6,10 +6,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="#30000000"
-    android:id="@+id/indicator_layout">
+    android:id="@id/indicator_layout">
 
     <LinearLayout
-        android:id="@+id/layout_image_indicator"
+        android:id="@id/layout_image_indicator"
         android:layout_width="0dp"
         android:layout_height="40dp"
         android:orientation="horizontal"
@@ -19,7 +19,7 @@
         app:layout_constraintBottom_toTopOf="@id/txt_title"/>
 
     <TextView
-        android:id="@+id/txt_num_indicator"
+        android:id="@id/txt_num_indicator"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_margin="8dp"
@@ -33,7 +33,7 @@
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <TextView
-        android:id="@+id/txt_title"
+        android:id="@id/txt_title"
         android:layout_width="0dp"
         android:layout_height="40dp"
         android:padding="8dp"

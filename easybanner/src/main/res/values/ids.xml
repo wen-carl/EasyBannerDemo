@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="mainContent" type="id"/>
+    <item name="banner_view_pager" type="id"/>
+    <item name="indicator_layout" type="id"/>
+    <item name="layout_image_indicator" type="id"/>
+    <item name="txt_num_indicator" type="id"/>
+    <item name="txt_title" type="id"/>
+    <item name="easy_banner_image" type="id"/>
+</resources>

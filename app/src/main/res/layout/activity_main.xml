@@ -11,7 +11,8 @@
     <com.seven.easybanner.EasyBanner
         android:id="@+id/easy_banner"
         android:layout_width="match_parent"
-        android:layout_height="300dp" />
+        android:layout_height="300dp"
+        app:indicator_style="image_indicator"/>
 
     <LinearLayout
         android:id="@+id/control"
