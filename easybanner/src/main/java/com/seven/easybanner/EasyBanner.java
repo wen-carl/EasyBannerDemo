@@ -1,6 +1,7 @@
 package com.seven.easybanner;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.IntDef;
@@ -119,26 +120,26 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     private ViewPager mViewPager;
     private BaseAdapter mAdapter;
     private @BannerStatus int mStatus = STATUS_NOT_START;
-    private boolean isAutoPlay = true;
-    private long mTimeInterval = 2000L;
-    private @IndicatorMode int mIndicatorMode = MODE_DEFAULT;
-    private @Direction int mDirection = DIRECTION_POSITIVE;
+    private boolean isAutoPlay = EasyBannerConfig.AUTO_PLAY;
+    private int mTimeInterval = EasyBannerConfig.TIME_INTERVAL;
+    private @IndicatorMode int mIndicatorMode = EasyBannerConfig.INDICATOR_MODE;
+    private @Direction int mDirection = EasyBannerConfig.DIRECTION;
     private @IndicatorStyle int mIndicatorStyle = STYLE_IMAGE_INDICATOR;
-    private @IndicatorGravity int mImageIndicatorGravity = GRAVITY_CENTER;
-    private @IndicatorGravity int mTitleIndicatorGravity = GRAVITY_CENTER;
-    private int mIndicatorBackground;
-    private int mImageIndicatorBackground;
-    private int mImageIndicatorStateBackground;
-    private int mImageIndicatorWidth;
-    private int mImageIndicatorHeight;
-    private int mImageIndicatorMarginVertical;
-    private int mImageIndicatorMarginHorizontal;
-    private int mNumIndicatorBackground;
-    private int mNumIndicatorTextColor;
-    private int mNumIndicatorTextSize;
-    private int mTitleIndicatorBackground;
-    private int mTitleIndicatorTextSize;
-    private int mTitleIndicatorTextColor;
+    private @IndicatorGravity int mImageIndicatorGravity = EasyBannerConfig.IMAGE_INDICATOR_GRAVITY;
+    private @IndicatorGravity int mTitleIndicatorGravity = EasyBannerConfig.TITLE_INDICATOR_GRAVITY;
+    private int mIndicatorBackground = EasyBannerConfig.INDICATOR_BACKGROUND;
+    private int mImageIndicatorBackground = EasyBannerConfig.IMAGE_INDICATOR_BACKGROUND;
+    private int mImageIndicatorStateBackground = EasyBannerConfig.IMAGE_INDICATOR_STATE_BACKGROUND;
+    private int mImageIndicatorWidth = EasyBannerConfig.IMAGE_INDICATOR_WIDTH;
+    private int mImageIndicatorHeight = EasyBannerConfig.IMAGE_INDICATOR_HEIGHT;
+    private int mImageIndicatorMarginVertical = EasyBannerConfig.IMAGE_INDICATOR_MARGIN_VERTICAL;
+    private int mImageIndicatorMarginHorizontal = EasyBannerConfig.IMAGE_INDICATOR_MARGIN_HORIZONTAL;
+    private int mNumIndicatorBackground = EasyBannerConfig.NUM_INDICATOR_BACKGROUND;
+    private int mNumIndicatorTextColor = EasyBannerConfig.NUM_INDICATOR_TEXT_COLOR;
+    private int mNumIndicatorTextSize = EasyBannerConfig.NUM_INDICATOR_TEXT_SIZE;
+    private int mTitleIndicatorBackground = EasyBannerConfig.TITLE_INDICATOR_BACKGROUND;
+    private int mTitleIndicatorTextSize = EasyBannerConfig.TITLE_INDICATOR_TEXT_SIZE;
+    private int mTitleIndicatorTextColor = EasyBannerConfig.TITLE_INDICATOR_TEXT_SIZE;
     private int mTitleIndicatorTextLine;
 
     private static final int BASE_INDICATOR_ID = 1000;
@@ -167,6 +168,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
 
     public EasyBanner(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        handleAttributeSet(attrs);
 
         ViewGroup mainContent = (ViewGroup) LayoutInflater.from(getContext()).inflate(R.layout.layout_easy_banner, this, true);
         mViewPager = mainContent.findViewById(R.id.banner_view_pager);
@@ -179,6 +181,20 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
 
     public EasyBanner(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
+    }
+    
+    private void handleAttributeSet(AttributeSet attrs) {
+        if (null == attrs)
+            return;
+        
+        TypedArray typedArray = this.getContext().obtainStyledAttributes(attrs, R.styleable.EasyBanner);
+        isAutoPlay = typedArray.getBoolean(R.styleable.EasyBanner_auto_play, isAutoPlay);
+        mTimeInterval = typedArray.getInt(R.styleable.EasyBanner_time_interval, mTimeInterval);
+        mIndicatorMode = typedArray.getInt(R.styleable.EasyBanner_indicator_mode, mIndicatorMode);
+        mIndicatorStyle = typedArray.getInt(R.styleable.EasyBanner_indicator_style, mIndicatorStyle);
+        
+        
+        typedArray.recycle();
     }
 
     public BaseAdapter getAdapter() {
@@ -228,7 +244,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     }
 
     @NonNull
-    public final EasyBanner setTimeInterval(long interval) {
+    public final EasyBanner setTimeInterval(int interval) {
         mTimeInterval = interval;
         return this;
     }
@@ -369,7 +385,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
             params.leftMargin = 5;
             params.rightMargin = 5;
             iv.setLayoutParams(params);
-            iv.setImageResource(R.drawable.circle_indicator_background);
+            iv.setImageResource(R.drawable.image_indicator_background);
             iv.setSelected(false);
             iv.setId(BASE_INDICATOR_ID + i);
             mImageIndicator.addView(iv);
@@ -858,5 +874,3 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         public static final Class<? extends PageTransformer> ZoomOutSlide = ZoomOutSlideTransformer.class;
     }
 }
-
-
