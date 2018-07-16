@@ -12,7 +12,16 @@
         android:id="@+id/easy_banner"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        app:indicator_style="image_indicator"/>
+        app:indicator_style="num_indicator"
+        app:auto_play="true"
+        app:direction="negative"
+        app:image_scale_type="fit_center"
+        app:indicator_gravity="end"
+        app:indicator_background="@color/gray_30"
+        app:indicator_mode="inside"
+        app:time_interval="5000"
+        app:title_text_color="#ff0000"
+        app:indicator_num_text_color="#00ff90"/>
 
     <LinearLayout
         android:id="@+id/control"

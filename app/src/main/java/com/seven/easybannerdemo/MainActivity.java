@@ -49,9 +49,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initData();
         mBanner = findViewById(R.id.easy_banner);
         mBanner.setAdapter(new ImageBannerAdapter<DataModel>(mModels, this))
-                .setAutoPlay(true)
-                .setIndicatorStyle(EasyBanner.STYLE_IMAGE_INDICATOR)
-                .setPageTransformer(new MyTransformer())
                 .setOnBannerItemClickListener(this)
                 .start();
 
@@ -66,20 +63,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case "STYLE_IMAGE_INDICATOR":
                         style = EasyBanner.STYLE_IMAGE_INDICATOR;
                         break;
-                    case "STYLE_TITLE_WITH_IMAGE_INDICATOR_INSIDE":
-                        style = EasyBanner.STYLE_TITLE_WITH_IMAGE_INDICATOR_INSIDE;
-                        break;
-                    case "STYLE_TITLE_WITH_IMAGE_INDICATOR_OUTSIDE":
-                        style = EasyBanner.STYLE_TITLE_WITH_IMAGE_INDICATOR_OUTSIDE;
+                    case "STYLE_TITLE_WITH_IMAGE_INDICATOR":
+                        style = EasyBanner.STYLE_TITLE_WITH_IMAGE_INDICATOR;
                         break;
                     case "STYLE_NUM_INDICATOR":
                         style = EasyBanner.STYLE_NUM_INDICATOR;
                         break;
-                    case "STYLE_TITLE_WITH_NUM_INDICATOR_INSIDE":
-                        style = EasyBanner.STYLE_TITLE_WITH_NUM_INDICATOR_INSIDE;
-                        break;
-                    case "STYLE_TITLE_WITH_NUM_INDICATOR_OUTSIDE":
-                        style = EasyBanner.STYLE_TITLE_WITH_NUM_INDICATOR_OUTSIDE;
+                    case "STYLE_TITLE_WITH_NUM_INDICATOR":
+                        style = EasyBanner.STYLE_TITLE_WITH_NUM_INDICATOR;
                         break;
                     case "STYLE_TITLE":
                         style = EasyBanner.STYLE_TITLE;
@@ -213,11 +204,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mStyles = new ArrayList<>();
         mStyles.add("STYLE_IMAGE_INDICATOR");
-        mStyles.add("STYLE_TITLE_WITH_IMAGE_INDICATOR_INSIDE");
-        mStyles.add("STYLE_TITLE_WITH_IMAGE_INDICATOR_OUTSIDE");
+        mStyles.add("STYLE_TITLE_WITH_IMAGE_INDICATOR");
         mStyles.add("STYLE_NUM_INDICATOR");
-        mStyles.add("STYLE_TITLE_WITH_NUM_INDICATOR_INSIDE");
-        mStyles.add("STYLE_TITLE_WITH_NUM_INDICATOR_OUTSIDE");
+        mStyles.add("STYLE_TITLE_WITH_NUM_INDICATOR");
         mStyles.add("STYLE_TITLE");
         mStyles.add("STYLE_NONE");
 

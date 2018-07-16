@@ -15,16 +15,23 @@ import java.util.List;
 public final class ImageBannerAdapter<T extends DataModel> extends BaseAdapter<T> {
 
     private IImageLoader mLoader;
+    private ImageView.ScaleType mScaleTape = ImageView.ScaleType.CENTER_CROP;
 
     public ImageBannerAdapter(@NonNull List<T> mData, IImageLoader loader) {
         super(mData);
         mLoader = loader;
     }
 
+    public void setScaleTape(ImageView.ScaleType scaleTape) {
+        mScaleTape = scaleTape;
+    }
+
     @NonNull
     @Override
     public View onCreateView(@NonNull ViewGroup parent, int position, int viewType) {
-        return LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image, parent, false);
+        ImageView iv = (ImageView) LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image, parent, false);
+        iv.setScaleType(mScaleTape);
+        return iv;
     }
 
     @Override
