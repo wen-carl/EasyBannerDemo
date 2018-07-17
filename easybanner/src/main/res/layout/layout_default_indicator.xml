@@ -10,9 +10,9 @@
         android:id="@id/layout_indicator"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/dp4"
         android:orientation="horizontal"
         android:gravity="center"
+        android:padding="@dimen/dp4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/txt_title">
@@ -20,28 +20,30 @@
         <LinearLayout
             android:id="@id/layout_image_indicator"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/dp40"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/dp32"
             android:orientation="horizontal"
             android:gravity="center"/>
 
         <TextView
             android:id="@id/txt_num_indicator"
-            android:layout_width="@dimen/dp40"
-            android:layout_height="@dimen/dp40"
+            android:layout_width="@dimen/dp32"
+            android:layout_height="@dimen/dp32"
             android:text="1/5"
             android:gravity="center"
             android:background="@drawable/num_indicator_background"
-            android:textSize="@dimen/sp18"
-            android:textColor="@android:color/white" />
+            android:textSize="@dimen/sp17"/>
 
     </LinearLayout>
 
     <TextView
         android:id="@id/txt_title"
         android:layout_width="@dimen/dp0"
-        android:layout_height="@dimen/dp40"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/dp40"
         android:padding="@dimen/dp8"
         android:gravity="center"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>

@@ -24,7 +24,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -83,12 +82,11 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         public static final int TITLE_GRAVITY = EasyBanner.GRAVITY_START;
 
         public static final int INDICATOR_BACKGROUND = R.color.translucent;
-        public static final int IMAGE_INDICATOR_BACKGROUND = R.color.translucent;
         public static final int IMAGE_INDICATOR_STATE_BACKGROUND = R.drawable.image_indicator_background;
-        public static final int IMAGE_INDICATOR_MARGIN_VERTICAL = R.dimen.dp8;
-        public static final int IMAGE_INDICATOR_MARGIN_HORIZONTAL = R.dimen.dp8;
+        public static final int IMAGE_INDICATOR_MARGIN_VERTICAL = R.dimen.dp4;
+        public static final int IMAGE_INDICATOR_MARGIN_HORIZONTAL = R.dimen.dp4;
         public static final int NUM_INDICATOR_BACKGROUND = R.drawable.num_indicator_background;
-        public static final int NUM_INDICATOR_TEXT_COLOR = R.color.black;
+        public static final int NUM_INDICATOR_TEXT_COLOR = R.color.white_ee;
         public static final int NUM_INDICATOR_TEXT_SIZE = R.dimen.sp18;
         public static final int TITLE_BACKGROUND = R.color.gray_30;
         public static final int TITLE_TEXT_SIZE = R.dimen.sp14;
@@ -191,6 +189,8 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     private TextView mTitleIndicator;
     private boolean isIndicatorDefault = true;
     private int mCurrentIndex = 1;
+
+    private List<OnPageChangeListener> mOnPageChangeListeners;
 
     private static final Handler mHandler = new Handler();
     private final Runnable mLoopRunnable = new Runnable() {
@@ -332,6 +332,24 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         isIndicatorDefault = mIndicatorLayoutId == DefaultConfig.INDICATOR_LAYOUT;
 
         typedArray.recycle();
+    }
+
+    private EasyBanner addOnPageChangeListener(@NonNull OnPageChangeListener listener) {
+        if (null == mOnPageChangeListeners) {
+            mOnPageChangeListeners = new ArrayList<>();
+        }
+
+        mOnPageChangeListeners.add(listener);
+
+        return this;
+    }
+
+    private boolean removeOnPageChangeListener(@NonNull OnPageChangeListener listener) {
+        if (null != mOnPageChangeListeners && mOnPageChangeListeners.contains(listener)) {
+            return mOnPageChangeListeners.remove(listener);
+        }
+
+        return false;
     }
 
     public BaseAdapter getAdapter() {
@@ -621,6 +639,24 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     public int getStatus() {
         return mStatus;
     }
+
+    public int getCurrentItem() {
+        return mAdapter.getRealPosition(mCurrentIndex);
+    }
+
+    public EasyBanner setCurrentItem(int index) {
+        int mockIndex = index + 1;
+        if (index <= 0) {
+            mockIndex = 1;
+        } else if (index < mAdapter.getData().size()) {
+            mockIndex = index + 1;
+        } else {
+            mockIndex = mAdapter.getData().size();
+        }
+        mViewPager.setCurrentItem(mockIndex);
+
+        return this;
+    }
     
     public EasyBanner setImageIndicatorGravity(@IndicatorGravity int gravity) {
         
@@ -675,7 +711,13 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
 
         switch (mIndicatorMode) {
             case INDICATOR_MODE_INSIDE: {
-                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(mIndicatorView.getLayoutParams());
+                mIndicatorView.setBackgroundColor(getResources().getColor(mTitleBackgroundId));
+
+                int indicatorHeight = mIndicatorView.getHeight();
+                int titleHeight = mTitleIndicator.getHeight();
+                int height = Math.max(indicatorHeight, titleHeight);
+
+                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, height);
                 params.startToStart = -1;
                 params.endToEnd = R.id.indicator_container;
                 params.topToTop = R.id.indicator_container;
@@ -683,6 +725,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 mIndicatorView.setLayoutParams(params);
 
                 ConstraintLayout.LayoutParams titleParams = new ConstraintLayout.LayoutParams(mTitleIndicator.getLayoutParams());
+                titleParams.height = height;
                 titleParams.startToStart = R.id.indicator_container;
                 titleParams.endToStart = R.id.layout_indicator;
                 titleParams.bottomToBottom = R.id.indicator_container;
@@ -691,14 +734,16 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 break;
             case INDICATOR_MODE_OUTSIDE:
             default: {
-                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, mIndicatorView.getLayoutParams().height);
+                mIndicatorView.setBackgroundColor(getResources().getColor(mIndicatorBackgroundId));
+
+                ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
                 params.startToStart = R.id.indicator_container;
                 params.endToEnd = R.id.indicator_container;
                 params.topToTop = R.id.indicator_container;
                 params.bottomToTop = R.id.txt_title;
                 mIndicatorView.setLayoutParams(params);
 
-                ConstraintLayout.LayoutParams titleParams = new ConstraintLayout.LayoutParams(mTitleIndicator.getLayoutParams());
+                ConstraintLayout.LayoutParams titleParams = new ConstraintLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
                 titleParams.startToStart = R.id.indicator_container;
                 titleParams.endToEnd = R.id.indicator_container;
                 titleParams.bottomToBottom = R.id.indicator_container;
@@ -889,20 +934,42 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 } else if (mCurrentIndex == mAdapter.getData().size() + 1) {
                     mViewPager.setCurrentItem(1, false);
                 }
-                Log.i(TAG, "onPageScrollStateChanged mCurrentIndex: " + mCurrentIndex);
                 break;
             case ViewPager.SCROLL_STATE_SETTLING:
             default:
                 break;
         }
+
+        if (mCurrentIndex != 0 && mCurrentIndex != mAdapter.getData().size() + 1) {
+            if (null != mOnPageChangeListeners) {
+                for (OnPageChangeListener listener : mOnPageChangeListeners) {
+                    listener.onPageScrollStateChanged(state);
+                }
+            }
+        }
     }
 
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        if (mCurrentIndex != 0 && mCurrentIndex != mAdapter.getData().size() + 1) {
+            if (null != mOnPageChangeListeners) {
+                int realPosition = mAdapter.getRealPosition(position);
+                for (OnPageChangeListener listener : mOnPageChangeListeners) {
+                    listener.onPageScrolled(realPosition, positionOffset, positionOffsetPixels);
+                }
+            }
+        }
     }
 
     public void onPageSelected(int position) {
         updateIndicatorIndex(position);
-        Log.i(TAG, "onPageSelected position: " + position);
+        if (mCurrentIndex != 0 && mCurrentIndex != mAdapter.getData().size() + 1) {
+            if (null != mOnPageChangeListeners) {
+                int realPosition = mAdapter.getRealPosition(position);
+                for (OnPageChangeListener listener : mOnPageChangeListeners) {
+                    listener.onPageSelected(realPosition);
+                }
+            }
+        }
     }
 
     /**

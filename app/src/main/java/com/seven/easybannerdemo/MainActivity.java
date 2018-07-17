@@ -1,5 +1,6 @@
 package com.seven.easybannerdemo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewPager;
@@ -9,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -26,12 +28,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mBtnPause;
     private Button mBtnStart;
     private Button mBtnReverse;
-    private Spinner mIndicatorStyle;
-    private Spinner mTransformer;
 
     private List<DataModel> mModels;
-    private List<String> mStyles;
-    private List<String> mTrans;
+    private List<String> mItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,109 +51,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setOnBannerItemClickListener(this)
                 .start();
 
-        mIndicatorStyle = findViewById(R.id.spinner_indicator_style);
-        mIndicatorStyle.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, mStyles));
-        mIndicatorStyle.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        ListView listView = findViewById(R.id.list_view);
+        listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mItems));
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String styleStr = mStyles.get(position);
-                int style;
-                switch (styleStr) {
-                    case "STYLE_IMAGE_INDICATOR":
-                        style = EasyBanner.STYLE_IMAGE_INDICATOR;
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String item = mItems.get(position);
+                Intent intent = null;
+                switch (item) {
+                    case "IndicatorStyle":
+                        intent = new Intent(MainActivity.this, IndicatorActivity.class);
                         break;
-                    case "STYLE_TITLE_WITH_IMAGE_INDICATOR":
-                        style = EasyBanner.STYLE_TITLE_WITH_IMAGE_INDICATOR;
+                    case "Transformer":
+                        intent = new Intent(MainActivity.this, TransformerActivity.class);
                         break;
-                    case "STYLE_NUM_INDICATOR":
-                        style = EasyBanner.STYLE_NUM_INDICATOR;
-                        break;
-                    case "STYLE_TITLE_WITH_NUM_INDICATOR":
-                        style = EasyBanner.STYLE_TITLE_WITH_NUM_INDICATOR;
-                        break;
-                    case "STYLE_TITLE":
-                        style = EasyBanner.STYLE_TITLE;
-                        break;
-                    case "STYLE_NONE":
                     default:
-                        style = EasyBanner.STYLE_NONE;
                         break;
                 }
 
-                mBanner.setIndicatorStyle(style);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
-        });
-
-        mTransformer = findViewById(R.id.spinner_transformer);
-        mTransformer.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, mTrans));
-        mTransformer.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String transStr = mTrans.get(position);
-                Class trans;
-                switch (transStr) {
-                    case "Accordion":
-                        trans = EasyBanner.Transformer.Accordion;
-                        break;
-                    case "BackgroundToForeground":
-                        trans = EasyBanner.Transformer.BackgroundToForeground;
-                        break;
-                    case "ForegroundToBackground":
-                        trans = EasyBanner.Transformer.ForegroundToBackground;
-                        break;
-                    case "CubeIn":
-                        trans = EasyBanner.Transformer.CubeIn;
-                        break;
-                    case "CubeOut":
-                        trans = EasyBanner.Transformer.CubeOut;
-                        break;
-                    case "DepthPage":
-                        trans = EasyBanner.Transformer.DepthPage;
-                        break;
-                    case "FlipHorizontal":
-                        trans = EasyBanner.Transformer.FlipHorizontal;
-                        break;
-                    case "FlipVertical":
-                        trans = EasyBanner.Transformer.FlipVertical;
-                        break;
-                    case "RotateDown":
-                        trans = EasyBanner.Transformer.RotateDown;
-                        break;
-                    case "RotateUp":
-                        trans = EasyBanner.Transformer.RotateUp;
-                        break;
-                    case "ScaleInOut":
-                        trans = EasyBanner.Transformer.ScaleInOut;
-                        break;
-                    case "Stack":
-                        trans = EasyBanner.Transformer.Stack;
-                        break;
-                    case "Tablet":
-                        trans = EasyBanner.Transformer.Tablet;
-                        break;
-                    case "ZoomIn":
-                        trans = EasyBanner.Transformer.ZoomIn;
-                        break;
-                    case "ZoomOut":
-                        trans = EasyBanner.Transformer.ZoomOut;
-                        break;
-                    case "ZoomOutSlide":
-                        trans = EasyBanner.Transformer.ZoomOutSlide;
-                        break;
-                    case "Default":
-                    default:
-                        trans = EasyBanner.Transformer.Default;
-                        break;
+                if (null != intent) {
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(MainActivity.this, item + " Developing!", Toast.LENGTH_SHORT).show();
                 }
-
-                //mBanner.setPageTransformer(trans);
             }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
         });
     }
 
@@ -202,32 +122,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mModels.add(new DataModel("3", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic2b16zuj30ci08cwf4.jpg"));
         mModels.add(new DataModel("4", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic2e7vsaj30ci08cglz.jpg"));
 
-        mStyles = new ArrayList<>();
-        mStyles.add("STYLE_IMAGE_INDICATOR");
-        mStyles.add("STYLE_TITLE_WITH_IMAGE_INDICATOR");
-        mStyles.add("STYLE_NUM_INDICATOR");
-        mStyles.add("STYLE_TITLE_WITH_NUM_INDICATOR");
-        mStyles.add("STYLE_TITLE");
-        mStyles.add("STYLE_NONE");
-
-        mTrans = new ArrayList<>();
-        mTrans.add("Default");
-        mTrans.add("Accordion");
-        mTrans.add("BackgroundToForeground");
-        mTrans.add("ForegroundToBackground");
-        mTrans.add("CubeIn");
-        mTrans.add("CubeOut");
-        mTrans.add("DepthPage");
-        mTrans.add("FlipHorizontal");
-        mTrans.add("FlipVertical");
-        mTrans.add("RotateDown");
-        mTrans.add("RotateUp");
-        mTrans.add("ScaleInOut");
-        mTrans.add("Stack");
-        mTrans.add("Tablet");
-        mTrans.add("ZoomIn");
-        mTrans.add("ZoomOut");
-        mTrans.add("ZoomOutSlide");
+        mItems = new ArrayList<>();
+        mItems.add("IndicatorStyle");
+        mItems.add("Transformer");
     }
 
     @Override

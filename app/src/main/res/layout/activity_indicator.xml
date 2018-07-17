@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".IndicatorActivity">
+
+    <com.seven.easybanner.EasyBanner
+        android:id="@+id/easy_banner"
+        android:layout_width="@dimen/dp0"
+        android:layout_height="@dimen/dp300"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/txt_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/dp40"
+        android:padding="@dimen/dp8"
+        android:gravity="center"
+        android:text="Mode:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/easy_banner"/>
+
+    <Spinner
+        android:id="@+id/spinner_mode"
+        android:layout_width="@dimen/dp0"
+        android:layout_height="@dimen/dp0"
+        android:textAlignment="textEnd"
+        app:layout_constraintStart_toEndOf="@id/txt_mode"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/txt_mode"
+        app:layout_constraintBottom_toBottomOf="@id/txt_mode"/>
+
+    <TextView
+        android:id="@+id/txt_gravity"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/dp40"
+        android:padding="@dimen/dp8"
+        android:gravity="center"
+        android:text="Gravity:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txt_mode"/>
+
+    <Spinner
+        android:id="@+id/spinner_gravity"
+        android:layout_width="@dimen/dp0"
+        android:layout_height="@dimen/dp0"
+        android:textAlignment="textEnd"
+        app:layout_constraintStart_toEndOf="@id/txt_gravity"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/txt_gravity"
+        app:layout_constraintBottom_toBottomOf="@id/txt_gravity"/>
+
+    <TextView
+        android:id="@+id/txt_style"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/dp40"
+        android:padding="@dimen/dp8"
+        android:gravity="center"
+        android:text="Style:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txt_gravity"/>
+
+    <Spinner
+        android:id="@+id/spinner_style"
+        android:layout_width="@dimen/dp0"
+        android:layout_height="@dimen/dp0"
+        android:textAlignment="textEnd"
+        app:layout_constraintStart_toEndOf="@id/txt_style"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/txt_style"
+        app:layout_constraintBottom_toBottomOf="@id/txt_style"/>
+
+</android.support.constraint.ConstraintLayout>
