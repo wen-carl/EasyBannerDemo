@@ -1,45 +1,38 @@
 package com.seven.easybannerdemo;
 
-import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.seven.easybanner.EasyBanner;
 import com.seven.easybanner.adapter.ImageBannerAdapter;
 import com.seven.easybanner.model.DataModel;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class TransformerActivity extends AppCompatActivity implements ImageBannerAdapter.IImageLoader {
 
-    private List<DataModel> mModels;
-    private List<String> mItems;
+    private EasyBanner mBanner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transformer);
-        initData();
 
-        final EasyBanner mBanner = findViewById(R.id.easy_banner);
-        mBanner.setAdapter(new ImageBannerAdapter<DataModel>(mModels, this))
+        mBanner = findViewById(R.id.easy_banner);
+        mBanner.setAdapter(new ImageBannerAdapter<DataModel>(DataHolder.models, this))
                 .start();
 
         ListView listView = findViewById(R.id.list_view);
-        listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mItems));
+        listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, DataHolder.transformers));
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String transStr = mItems.get(position);
+                String transStr = DataHolder.transformers.get(position);
                 Class trans;
                 switch (transStr) {
                     case "Accordion":
@@ -100,34 +93,19 @@ public class TransformerActivity extends AppCompatActivity implements ImageBanne
             }
         });
     }
-    
-    private void initData() {
-        mModels = new ArrayList<>();
-        mModels.add(new DataModel("0", "http://ww4.sinaimg" +
-                ".cn/large/006uZZy8jw1faic1xjab4j30ci08cjrv.jpg"));
-        mModels.add(new DataModel("1", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic21363tj30ci08ct96.jpg"));
-        mModels.add(new DataModel("2", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic259ohaj30ci08c74r.jpg"));
-        mModels.add(new DataModel("3", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic2b16zuj30ci08cwf4.jpg"));
-        mModels.add(new DataModel("4", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic2e7vsaj30ci08cglz.jpg"));
 
-        mItems = new ArrayList<>();
-        mItems.add("Default");
-        mItems.add("Accordion");
-        mItems.add("BackgroundToForeground");
-        mItems.add("ForegroundToBackground");
-        mItems.add("CubeIn");
-        mItems.add("CubeOut");
-        mItems.add("DepthPage");
-        mItems.add("FlipHorizontal");
-        mItems.add("FlipVertical");
-        mItems.add("RotateDown");
-        mItems.add("RotateUp");
-        mItems.add("ScaleInOut");
-        mItems.add("Stack");
-        mItems.add("Tablet");
-        mItems.add("ZoomIn");
-        mItems.add("ZoomOut");
-        mItems.add("ZoomOutSlide");
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mBanner.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        mBanner.pause();
     }
 
     @Override

@@ -11,7 +11,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -29,7 +28,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mBtnStart;
     private Button mBtnReverse;
 
-    private List<DataModel> mModels;
     private List<String> mItems;
 
     @Override
@@ -47,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         initData();
         mBanner = findViewById(R.id.easy_banner);
-        mBanner.setAdapter(new ImageBannerAdapter<DataModel>(mModels, this))
+        mBanner.setAdapter(new ImageBannerAdapter<DataModel>(DataHolder.models, this))
                 .setOnBannerItemClickListener(this)
                 .start();
 
@@ -65,6 +63,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case "Transformer":
                         intent = new Intent(MainActivity.this, TransformerActivity.class);
                         break;
+                    case "Custom":
+                        intent = new Intent(MainActivity.this, CustomActivity.class);
+                        break;
                     default:
                         break;
                 }
@@ -76,6 +77,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mBanner.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        mBanner.pause();
     }
 
     @Override
@@ -114,17 +129,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initData() {
-        mModels = new ArrayList<>();
-        mModels.add(new DataModel("0", "http://ww4.sinaimg" +
-                ".cn/large/006uZZy8jw1faic1xjab4j30ci08cjrv.jpg"));
-        mModels.add(new DataModel("1", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic21363tj30ci08ct96.jpg"));
-        mModels.add(new DataModel("2", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic259ohaj30ci08c74r.jpg"));
-        mModels.add(new DataModel("3", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic2b16zuj30ci08cwf4.jpg"));
-        mModels.add(new DataModel("4", "http://ww4.sinaimg.cn/large/006uZZy8jw1faic2e7vsaj30ci08cglz.jpg"));
+        DataHolder.models.add(new DataModel("0", getString(R.string.url1)));
+        DataHolder.models.add(new DataModel("1", getString(R.string.url2)));
+        DataHolder.models.add(new DataModel("2", getString(R.string.url3)));
+        DataHolder.models.add(new DataModel("3", getString(R.string.url4)));
+        DataHolder.models.add(new DataModel("4", getString(R.string.url5)));
 
         mItems = new ArrayList<>();
         mItems.add("IndicatorStyle");
         mItems.add("Transformer");
+        mItems.add("Custom");
     }
 
     @Override

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CustomActivity">
+
+    <com.seven.easybanner.EasyBanner
+        android:id="@+id/easy_banner"
+        android:layout_width="@dimen/dp0"
+        android:layout_height="@dimen/dp300"
+        app:indicator_image_height="@dimen/dp4"
+        app:indicator_image_width="@dimen/dp8"
+        app:indicator_image_margin="2dp"
+        app:indicator_image_state_background="@drawable/indicator_image_background"
+        app:auto_play="false"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:indicator_style="image_indicator"/>
+
+</android.support.constraint.ConstraintLayout>

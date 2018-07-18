@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">EasyBannerDemo</string>
+
+    <string name="url1">https://timgsa.baidu.com/timg?image&amp;quality=100&amp;size=b9999_10000&amp;sec=1531908896524&amp;di=3d81251c41c619855e76133fe494d02b&amp;imgtype=0&amp;src=http%3A%2F%2Fc.hiphotos.baidu.com%2Fzhidao%2Fpic%2Fitem%2Ff603918fa0ec08fafb815caa55ee3d6d55fbda3e.jpg</string>
+    <string name="url2">https://timgsa.baidu.com/timg?image&amp;quality=100&amp;size=b9999_10000&amp;sec=1531908982474&amp;di=bcaca0d3af4741555c523a80c35f76f1&amp;imgtype=jpg&amp;src=http%3A%2F%2Fimg1.imgtn.bdimg.com%2Fit%2Fu%3D430849441%2C3801597554%26fm%3D214%26gp%3D0.jpg</string>
+    <string name="url3">https://timgsa.baidu.com/timg?image&amp;quality=100&amp;size=b9999_10000&amp;sec=1531908896504&amp;di=71d7928b0c5b49584a7267d87ed0bce9&amp;imgtype=0&amp;src=http%3A%2F%2Fs9.rr.itc.cn%2Fr%2FwapChange%2F201612_28_23%2Fa1tyu171760260406596.jpeg</string>
+    <string name="url4">https://timgsa.baidu.com/timg?image&amp;quality=100&amp;size=b9999_10000&amp;sec=1531910357502&amp;di=f76dc2f690e257d3925da4ddc9608e8c&amp;imgtype=0&amp;src=http%3A%2F%2Fpic1.zhimg.com%2F50%2Fv2-45ab6fd27ab103465e44f5e25356a480_hd.jpg</string>
+    <string name="url5">https://timgsa.baidu.com/timg?image&amp;quality=100&amp;size=b9999_10000&amp;sec=1531910357498&amp;di=b46d3c091ad8d759d2f3a22ec1f21ab3&amp;imgtype=0&amp;src=http%3A%2F%2Fpic1.zhimg.com%2F50%2Fv2-b2aa6b8eea815e62573729d8e6694109_hd.jpg</string>
 </resources>

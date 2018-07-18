@@ -1,11 +1,16 @@
 package com.seven.easybanner;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -24,6 +29,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -166,18 +172,18 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     private @IndicatorMode int mIndicatorMode;
     private @IndicatorGravity int mIndicatorGravity;
     private @IndicatorGravity int mTitleGravity;
-    private @ColorRes int mIndicatorBackgroundId;
+    private Drawable mIndicatorBackgroundDrawable;
     private @DrawableRes int mImageIndicatorStateBackgroundId;
     private int mImageIndicatorWidth;
     private int mImageIndicatorHeight;
     private int mImageIndicatorMarginVertical;
     private int mImageIndicatorMarginHorizontal;
-    private @DrawableRes int mNumIndicatorBackgroundId;
-    private @ColorRes int mNumIndicatorTextColorId;
+    private Drawable mNumIndicatorBackgroundDrawable;
+    private ColorStateList mNumIndicatorTextColor;
     private float mNumIndicatorTextSize;
-    private @ColorRes int mTitleBackgroundId;
+    private Drawable mTitleBackgroundDrawable;
     private float mTitleTextSize;
-    private @ColorRes int mTitleTextColorId;
+    private ColorStateList mTitleTextColor;
     private int mTitleTextLine;
     private ImageView.ScaleType mScaleType;
 
@@ -255,14 +261,14 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         if (!isIndicatorDefault)
             return;
 
-        mIndicatorView.setBackgroundColor(getResources().getColor(mIndicatorBackgroundId));
+        mIndicatorView.setBackground(mIndicatorBackgroundDrawable);
         mIndicatorView.setGravity(mIndicatorGravity);
         mNumIndicator.setTextSize(TypedValue.COMPLEX_UNIT_PX, mNumIndicatorTextSize);
-        mNumIndicator.setTextColor(getResources().getColor(mNumIndicatorTextColorId));
-        mNumIndicator.setBackgroundResource(mNumIndicatorBackgroundId);
+        mNumIndicator.setTextColor(mNumIndicatorTextColor);
+        mNumIndicator.setBackground(mNumIndicatorBackgroundDrawable);
 
-        mTitleIndicator.setBackgroundColor(getResources().getColor(mTitleBackgroundId));
-        mTitleIndicator.setTextColor(getResources().getColor(mTitleTextColorId));
+        mTitleIndicator.setBackground(mTitleBackgroundDrawable);
+        mTitleIndicator.setTextColor(mTitleTextColor);
         mTitleIndicator.setTextSize(TypedValue.COMPLEX_UNIT_PX, mTitleTextSize);
         mTitleIndicator.setLines(mTitleTextLine);
         mTitleIndicator.setGravity(mTitleGravity);
@@ -283,20 +289,56 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         mIndicatorMode = typedArray.getInt(R.styleable.EasyBanner_indicator_mode, DefaultConfig.INDICATOR_MODE);
         mIndicatorGravity = typedArray.getInt(R.styleable.EasyBanner_indicator_gravity, DefaultConfig.INDICATOR_GRAVITY);
         mTitleGravity = typedArray.getInt(R.styleable.EasyBanner_title_gravity, DefaultConfig.TITLE_GRAVITY);
-        mIndicatorBackgroundId = typedArray.getResourceId(R.styleable.EasyBanner_indicator_background, DefaultConfig.INDICATOR_BACKGROUND);
+        mIndicatorBackgroundDrawable = typedArray.getDrawable(R.styleable.EasyBanner_indicator_background);
+        if (null == mIndicatorBackgroundDrawable) {
+            mIndicatorBackgroundDrawable = new ColorDrawable(getResources().getColor(DefaultConfig.INDICATOR_BACKGROUND));
+        }
+
         mImageIndicatorStateBackgroundId = typedArray.getResourceId(R.styleable.EasyBanner_indicator_image_state_background, DefaultConfig.IMAGE_INDICATOR_STATE_BACKGROUND);
 
         DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
         int indicatorSize = dm.widthPixels / 80;
         mImageIndicatorWidth = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_width, indicatorSize);
         mImageIndicatorHeight = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_height, indicatorSize);
-        mImageIndicatorMarginHorizontal = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin_horizontal, getResources().getDimensionPixelSize(DefaultConfig.IMAGE_INDICATOR_MARGIN_HORIZONTAL));
-        mImageIndicatorMarginVertical = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin_vertical, getResources().getDimensionPixelSize(DefaultConfig.IMAGE_INDICATOR_MARGIN_VERTICAL));
-        mNumIndicatorTextColorId = typedArray.getResourceId(R.styleable.EasyBanner_indicator_num_text_color, DefaultConfig.NUM_INDICATOR_TEXT_COLOR);
-        mNumIndicatorBackgroundId = typedArray.getResourceId(R.styleable.EasyBanner_indicator_num_background, DefaultConfig.NUM_INDICATOR_BACKGROUND);
+
+        int image_margin = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin, -1);
+        mImageIndicatorMarginHorizontal = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin_horizontal, -1);
+        mImageIndicatorMarginVertical = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin_vertical, -1);
+
+        if (-1 != image_margin) {
+            if (-1 == mImageIndicatorMarginVertical) {
+                mImageIndicatorMarginVertical = image_margin;
+            }
+
+            if (-1 == mImageIndicatorMarginHorizontal) {
+                mImageIndicatorMarginHorizontal = image_margin;
+            }
+        } else {
+            mImageIndicatorMarginHorizontal = getResources().getDimensionPixelSize(DefaultConfig.IMAGE_INDICATOR_MARGIN_HORIZONTAL);
+            mImageIndicatorMarginVertical = getResources().getDimensionPixelSize(DefaultConfig.IMAGE_INDICATOR_MARGIN_VERTICAL);
+        }
+
+        mNumIndicatorTextColor = typedArray.getColorStateList(R.styleable.EasyBanner_indicator_num_text_color);
+        if (null == mNumIndicatorTextColor) {
+            mNumIndicatorTextColor = ColorStateList.valueOf(getResources().getColor(DefaultConfig.NUM_INDICATOR_TEXT_COLOR));
+        }
+
+        mNumIndicatorBackgroundDrawable = typedArray.getDrawable(R.styleable.EasyBanner_indicator_num_background);
+        if (null == mNumIndicatorBackgroundDrawable) {
+            mNumIndicatorBackgroundDrawable = getResources().getDrawable(DefaultConfig.NUM_INDICATOR_BACKGROUND);
+        }
+
         mNumIndicatorTextSize = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_num_text_size, getResources().getDimensionPixelSize(DefaultConfig.NUM_INDICATOR_TEXT_SIZE));
-        mTitleBackgroundId = typedArray.getResourceId(R.styleable.EasyBanner_title_background, DefaultConfig.TITLE_BACKGROUND);
-        mTitleTextColorId = typedArray.getResourceId(R.styleable.EasyBanner_title_text_color, DefaultConfig.TITLE_TEXT_COLOR);
+        mTitleBackgroundDrawable = typedArray.getDrawable(R.styleable.EasyBanner_title_background);
+        if (null == mTitleBackgroundDrawable) {
+            mTitleBackgroundDrawable = new ColorDrawable(getResources().getColor(DefaultConfig.TITLE_BACKGROUND));
+        }
+
+        mTitleTextColor = typedArray.getColorStateList(R.styleable.EasyBanner_title_text_color);
+        if (null == mTitleTextColor) {
+            mTitleTextColor = ColorStateList.valueOf(getResources().getColor(DefaultConfig.TITLE_TEXT_COLOR));
+        }
+
         mTitleTextSize = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_title_text_size, getResources().getDimensionPixelSize(DefaultConfig.TITLE_TEXT_SIZE));
         mTitleTextLine = typedArray.getInt(R.styleable.EasyBanner_title_text_line, getResources().getInteger(DefaultConfig.TITLE_TEXT_LINE));
         int scaleType = typedArray.getInt(R.styleable.EasyBanner_image_scale_type, 6);
@@ -334,7 +376,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         typedArray.recycle();
     }
 
-    private EasyBanner addOnPageChangeListener(@NonNull OnPageChangeListener listener) {
+    public EasyBanner addOnPageChangeListener(@NonNull OnPageChangeListener listener) {
         if (null == mOnPageChangeListeners) {
             mOnPageChangeListeners = new ArrayList<>();
         }
@@ -344,7 +386,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         return this;
     }
 
-    private boolean removeOnPageChangeListener(@NonNull OnPageChangeListener listener) {
+    public boolean removeOnPageChangeListener(@NonNull OnPageChangeListener listener) {
         if (null != mOnPageChangeListeners && mOnPageChangeListeners.contains(listener)) {
             return mOnPageChangeListeners.remove(listener);
         }
@@ -460,10 +502,23 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         return this;
     }
 
-    public EasyBanner setIndicatorBackgroundColorResource(@ColorRes int id) {
-        mIndicatorBackgroundId = id;
+    public EasyBanner setIndicatorBackgroundColor(@ColorInt int color) {
+        mIndicatorBackgroundDrawable = new ColorDrawable(color);
         if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
-            mIndicatorView.setBackgroundColor(getResources().getColor(mIndicatorBackgroundId));
+            mIndicatorView.setBackgroundColor(color);
+        }
+
+        return this;
+    }
+
+    public EasyBanner setIndicatorBackgroundResource(@DrawableRes int id) {
+        return setIndicatorBackground(getResources().getDrawable(id));
+    }
+
+    public EasyBanner setIndicatorBackground(@NonNull Drawable drawable) {
+        mIndicatorBackgroundDrawable = drawable;
+        if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
+            mIndicatorView.setBackground(mIndicatorBackgroundDrawable);
         }
 
         return this;
@@ -526,19 +581,41 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         return this;
     }
 
-    public EasyBanner setNumIndicatorBackgroundResource(@DrawableRes int id) {
-        mNumIndicatorBackgroundId = id;
+    public EasyBanner setNumIndicatorBackgroundColor(@ColorInt int color) {
+        mNumIndicatorBackgroundDrawable = new ColorDrawable(color);
         if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
-            mNumIndicator.setBackgroundResource(mNumIndicatorBackgroundId);
+            mNumIndicator.setBackgroundColor(color);
+        }
+
+        return this;
+    }
+
+    public EasyBanner setNumIndicatorBackgroundResource(@DrawableRes int id) {
+        mNumIndicatorBackgroundDrawable = getResources().getDrawable(id);
+        if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
+            mNumIndicator.setBackgroundResource(id);
+        }
+
+        return this;
+    }
+
+    public EasyBanner setNumIndicatorBackground(@NonNull Drawable drawable) {
+        mNumIndicatorBackgroundDrawable = drawable;
+        if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
+            mNumIndicator.setBackground(mNumIndicatorBackgroundDrawable);
         }
 
         return this;
     }
 
     public EasyBanner setNumIndicatorTextColorResource(@ColorRes int id) {
-        mNumIndicatorTextColorId = id;
+        return setNumIndicatorTextColor(ColorStateList.valueOf(getResources().getColor(id)));
+    }
+
+    public EasyBanner setNumIndicatorTextColor(@NonNull ColorStateList color) {
+        mNumIndicatorTextColor = color;
         if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
-            mNumIndicator.setTextColor(getResources().getColor(mNumIndicatorTextColorId));
+            mNumIndicator.setTextColor(mNumIndicatorTextColor);
         }
 
         return this;
@@ -554,18 +631,40 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     }
 
     public EasyBanner setTitleBackgroundResource(@DrawableRes int id) {
-        mTitleBackgroundId = id;
+        mTitleBackgroundDrawable = getResources().getDrawable(id);
         if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
-            mTitleIndicator.setBackgroundResource(mTitleBackgroundId);
+            mTitleIndicator.setBackgroundResource(id);
+        }
+
+        return this;
+    }
+
+    public EasyBanner setTitleBackgroundColor(@ColorInt int color) {
+        mTitleBackgroundDrawable = new ColorDrawable(color);
+        if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
+            mTitleIndicator.setBackgroundColor(color);
+        }
+
+        return this;
+    }
+
+    public EasyBanner setTitleBackground(@NonNull Drawable drawable) {
+        mTitleBackgroundDrawable = drawable;
+        if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
+            mTitleIndicator.setBackground(mTitleBackgroundDrawable);
         }
 
         return this;
     }
 
     public EasyBanner setTitleTextColorResource(@ColorRes int id) {
-        mTitleTextColorId = id;
+        return setTitleTextColor(ColorStateList.valueOf(getResources().getColor(id)));
+    }
+
+    public EasyBanner setTitleTextColor(@NonNull ColorStateList color) {
+        mTitleTextColor = color;
         if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
-            mTitleIndicator.setTextColor(getResources().getColor(mTitleTextColorId));
+            mTitleIndicator.setTextColor(mTitleTextColor);
         }
 
         return this;
@@ -631,6 +730,26 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         } else {
             throw new IllegalStateException("setOnBannerItemClickListener must called after setAdapter()");
         }
+
+        return this;
+    }
+
+    public EasyBanner setOnBannerItemLongClickListener(OnBannerItemLongClickListener listener) {
+        if (null != mAdapter) {
+            mAdapter.setOnBannerItemLongClickListener(listener);
+        } else {
+            throw new IllegalStateException("setOnBannerItemLongClickListener must called after setAdapter()");
+        }
+
+        return this;
+    }
+
+    public EasyBanner setOnClickListenerForView(OnClickListener listener, @IdRes int id) {
+        return setOnClickListenerForView(listener, findViewById(id));
+    }
+
+    public EasyBanner setOnClickListenerForView(OnClickListener listener, @NonNull View view) {
+        view.setOnClickListener(listener);
 
         return this;
     }
@@ -706,12 +825,12 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     }
 
     private void updateIndicatorByMode() {
-        if (null == mIndicatorView && null != mTitleIndicator)
+        if (null == mIndicatorView || null == mTitleIndicator)
             return;
 
         switch (mIndicatorMode) {
             case INDICATOR_MODE_INSIDE: {
-                mIndicatorView.setBackgroundColor(getResources().getColor(mTitleBackgroundId));
+                mIndicatorView.setBackground(mTitleBackgroundDrawable);
 
                 int indicatorHeight = mIndicatorView.getHeight();
                 int titleHeight = mTitleIndicator.getHeight();
@@ -734,7 +853,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 break;
             case INDICATOR_MODE_OUTSIDE:
             default: {
-                mIndicatorView.setBackgroundColor(getResources().getColor(mIndicatorBackgroundId));
+                mIndicatorView.setBackground(mIndicatorBackgroundDrawable);
 
                 ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
                 params.startToStart = R.id.indicator_container;
@@ -913,7 +1032,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         show(index);
     }
 
-    public void show(int index) {
+    private void show(int index) {
         int temp;
         if (index <= 0) {
             temp = 0;
@@ -1002,7 +1121,6 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         private List<T> mMockData;
 
         private HashMap<Number, HashMap<Number, View>> mCachedViewHolders = new HashMap<>();
-        private HashMap<Number, View> mShowingViewHolders = new HashMap<>();
 
         private OnBannerItemClickListener mOnClickListener;
         private OnBannerItemLongClickListener mOnLongClickListener;
@@ -1031,7 +1149,6 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
             container.addView(view);
             onDisplay(view, getRealPosition(position), mMockData.get(position));
 
-			mShowingViewHolders.put(position, view);
             view.setTag(TAG_KEY, getRealPosition(position));
             setClickListener(view);
 
@@ -1042,7 +1159,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             View view = (View) object;
             container.removeView(view);
-            mShowingViewHolders.remove(position);
+
             int type = getViewType(position);
             HashMap<Number, View> tempMap = mCachedViewHolders.get(type);
             if (null == tempMap) {
@@ -1058,7 +1175,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         }
 
         @Override
-        public int getCount() {
+        public final int getCount() {
             return mMockData.size();
         }
 
@@ -1077,11 +1194,11 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
 
         public void onBindIndicator(@NonNull View view, int position, T model) { }
 
-        public void setOnBannerItemClickListener(OnBannerItemClickListener listener) {
+        public final void setOnBannerItemClickListener(OnBannerItemClickListener listener) {
             mOnClickListener = listener;
         }
 
-        public void setOnBannerItemLongClickListener(OnBannerItemLongClickListener listener) {
+        public final void setOnBannerItemLongClickListener(OnBannerItemLongClickListener listener) {
             mOnLongClickListener = listener;
         }
 
@@ -1114,7 +1231,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
             });
         }
 
-        public int getRealPosition(int position) {
+        public final int getRealPosition(int position) {
             int real = 0;
             if (mData.size() <= 1) {
                 real = 0;
@@ -1141,13 +1258,72 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
             notifyDataSetChanged();
         }
 
-        public void bindData(@NonNull List<T> mData) {
-            this.mData = mData;
+        public final void bindData(@NonNull List<T> data) {
+            mData = data;
             updateMockedData();
         }
 
         public List<T> getData() {
             return mData;
+        }
+
+        public boolean add(T model) {
+            boolean result = mData.add(model);
+            if (result) {
+                updateMockedData();
+            }
+
+            return result;
+        }
+
+        public void add(int index, T model) {
+            mData.add(index, model);
+            updateMockedData();
+        }
+
+        public boolean add(@NonNull List<T> data) {
+            boolean result = mData.addAll(data);
+            if (result) {
+                updateMockedData();
+            }
+
+            return result;
+        }
+
+        public boolean add(int index, @NonNull List<T> data) {
+            boolean result = mData.addAll(index, data);
+            if (result) {
+                updateMockedData();
+            }
+
+            return result;
+        }
+
+        public boolean remove(T model) {
+            boolean result = mData.remove(model);
+            if (result) {
+                updateMockedData();
+            }
+
+            return result;
+        }
+
+        public T remove(int index) {
+            T result = mData.remove(index);
+            if (null != result) {
+                updateMockedData();
+            }
+
+            return result;
+        }
+
+        public boolean remove(List<T> data) {
+            boolean result = mData.removeAll(data);
+            if (result) {
+                updateMockedData();
+            }
+
+            return result;
         }
     }
 
