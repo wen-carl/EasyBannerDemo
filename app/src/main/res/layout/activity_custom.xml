@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/custom_container"
     tools:context=".CustomActivity">
 
     <com.seven.easybanner.EasyBanner
@@ -13,7 +14,7 @@
         app:indicator_image_height="@dimen/dp4"
         app:indicator_image_width="@dimen/dp8"
         app:indicator_image_margin="2dp"
-        app:indicator_image_state_background="@drawable/indicator_image_background"
+        app:indicator_image_state_background_drawable="@drawable/indicator_image_background"
         app:auto_play="false"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -26,12 +26,12 @@
             <enum name="end" value="8388629"/>
         </attr>
         <attr name="title_gravity" format="enum">
-            <enum name="start" value="0"/>
-            <enum name="center" value="1"/>
-            <enum name="end" value="2"/>
+            <enum name="start" value="8388627"/>
+            <enum name="center" value="17"/>
+            <enum name="end" value="8388629"/>
         </attr>
         <attr name="indicator_background" format="color|reference"/>
-        <attr name="indicator_image_state_background" format="reference"/>
+        <attr name="indicator_image_state_background_drawable" format="reference"/>
         <attr name="indicator_image_width" format="dimension"/>
         <attr name="indicator_image_height" format="dimension"/>
         <attr name="indicator_image_margin" format="dimension"/>

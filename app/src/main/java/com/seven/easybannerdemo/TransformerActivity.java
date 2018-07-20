@@ -8,13 +8,15 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.seven.easybanner.EasyBanner;
 import com.seven.easybanner.adapter.ImageBannerAdapter;
 import com.seven.easybanner.model.DataModel;
+import com.seven.easybanner.transformer.AccordionTransformer;
 
-public class TransformerActivity extends AppCompatActivity implements ImageBannerAdapter.IImageLoader {
+public class TransformerActivity extends AppCompatActivity implements ImageBannerAdapter.IImageLoader, EasyBanner.OnBannerItemClickListener {
 
     private EasyBanner mBanner;
 
@@ -25,6 +27,8 @@ public class TransformerActivity extends AppCompatActivity implements ImageBanne
 
         mBanner = findViewById(R.id.easy_banner);
         mBanner.setAdapter(new ImageBannerAdapter<DataModel>(DataHolder.models, this))
+                .setOnBannerItemClickListener(this)
+                .setPageTransformer(new AccordionTransformer())
                 .start();
 
         ListView listView = findViewById(R.id.list_view);
@@ -113,5 +117,10 @@ public class TransformerActivity extends AppCompatActivity implements ImageBanne
         Glide.with(this)
                 .load(model.getUrl())
                 .into(imageView);
+    }
+
+    @Override
+    public void onBannerClicked(@NonNull View view, int position, @NonNull DataModel model) {
+        Toast.makeText(this, "position: " + position + "\ntxt: " + model.getDescription(), Toast.LENGTH_SHORT).show();
     }
 }

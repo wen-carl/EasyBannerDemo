@@ -2,6 +2,7 @@ package com.seven.easybanner;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -33,6 +34,8 @@ import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.seven.easybanner.adapter.ImageBannerAdapter;
@@ -173,7 +176,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     private @IndicatorGravity int mIndicatorGravity;
     private @IndicatorGravity int mTitleGravity;
     private Drawable mIndicatorBackgroundDrawable;
-    private @DrawableRes int mImageIndicatorStateBackgroundId;
+    private @DrawableRes int mImageIndicatorStateBackgroundDrawableId;
     private int mImageIndicatorWidth;
     private int mImageIndicatorHeight;
     private int mImageIndicatorMarginVertical;
@@ -190,7 +193,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     private static final int BASE_INDICATOR_ID = 1000;
     private View mIndicatorContainer;
     private LinearLayout mIndicatorView;
-    private LinearLayout mImageIndicator;
+    private RadioGroup mImageIndicator;
     private TextView mNumIndicator;
     private TextView mTitleIndicator;
     private boolean isIndicatorDefault = true;
@@ -277,103 +280,136 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     }
     
     private void handleAttributeSet(AttributeSet attrs) {
-        if (null == attrs)
-            return;
-        
-        TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.EasyBanner);
-        isAutoPlay = typedArray.getBoolean(R.styleable.EasyBanner_auto_play, getResources().getBoolean(DefaultConfig.AUTO_PLAY));
-        mTimeInterval = typedArray.getInt(R.styleable.EasyBanner_time_interval, getResources().getInteger(DefaultConfig.TIME_INTERVAL));
-        mDirection = typedArray.getInt(R.styleable.EasyBanner_direction, DefaultConfig.DIRECTION);
-        mIndicatorLayoutId = typedArray.getResourceId(R.styleable.EasyBanner_indicator_layout, DefaultConfig.INDICATOR_LAYOUT);
-        mIndicatorStyle = typedArray.getInt(R.styleable.EasyBanner_indicator_style, DefaultConfig.INDICATOR_STYLE);
-        mIndicatorMode = typedArray.getInt(R.styleable.EasyBanner_indicator_mode, DefaultConfig.INDICATOR_MODE);
-        mIndicatorGravity = typedArray.getInt(R.styleable.EasyBanner_indicator_gravity, DefaultConfig.INDICATOR_GRAVITY);
-        mTitleGravity = typedArray.getInt(R.styleable.EasyBanner_title_gravity, DefaultConfig.TITLE_GRAVITY);
-        mIndicatorBackgroundDrawable = typedArray.getDrawable(R.styleable.EasyBanner_indicator_background);
-        if (null == mIndicatorBackgroundDrawable) {
-            mIndicatorBackgroundDrawable = new ColorDrawable(getResources().getColor(DefaultConfig.INDICATOR_BACKGROUND));
-        }
+        if (null == attrs) {
+            handleDefaultAttr();
+        } else {
+            TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.EasyBanner);
 
-        mImageIndicatorStateBackgroundId = typedArray.getResourceId(R.styleable.EasyBanner_indicator_image_state_background, DefaultConfig.IMAGE_INDICATOR_STATE_BACKGROUND);
+            isAutoPlay = typedArray.getBoolean(R.styleable.EasyBanner_auto_play, getResources().getBoolean(DefaultConfig.AUTO_PLAY));
+            mTimeInterval = typedArray.getInt(R.styleable.EasyBanner_time_interval, getResources().getInteger(DefaultConfig.TIME_INTERVAL));
+            mDirection = typedArray.getInt(R.styleable.EasyBanner_direction, DefaultConfig
+                    .DIRECTION);
+            mIndicatorLayoutId = typedArray.getResourceId(R.styleable.EasyBanner_indicator_layout, DefaultConfig.INDICATOR_LAYOUT);
+            mIndicatorStyle = typedArray.getInt(R.styleable.EasyBanner_indicator_style, DefaultConfig.INDICATOR_STYLE);
+            mIndicatorMode = typedArray.getInt(R.styleable.EasyBanner_indicator_mode, DefaultConfig.INDICATOR_MODE);
+            mIndicatorGravity = typedArray.getInt(R.styleable.EasyBanner_indicator_gravity, DefaultConfig.INDICATOR_GRAVITY);
+            mTitleGravity = typedArray.getInt(R.styleable.EasyBanner_title_gravity, DefaultConfig.TITLE_GRAVITY);
+            mIndicatorBackgroundDrawable = typedArray.getDrawable(R.styleable.EasyBanner_indicator_background);
+            if (null == mIndicatorBackgroundDrawable) {
+                mIndicatorBackgroundDrawable = new ColorDrawable(getResources().getColor(DefaultConfig.INDICATOR_BACKGROUND));
+            }
+
+            mImageIndicatorStateBackgroundDrawableId = typedArray.getResourceId(R.styleable.EasyBanner_indicator_image_state_background_drawable, DefaultConfig.IMAGE_INDICATOR_STATE_BACKGROUND);
+
+            DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
+            int indicatorSize = dm.widthPixels / 80;
+            mImageIndicatorWidth = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_width, indicatorSize);
+            mImageIndicatorHeight = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_height, indicatorSize);
+
+            int image_margin = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin, -1);
+            mImageIndicatorMarginHorizontal = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin_horizontal, -1);
+            mImageIndicatorMarginVertical = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin_vertical, -1);
+
+            if (-1 != image_margin) {
+                if (-1 == mImageIndicatorMarginVertical) {
+                    mImageIndicatorMarginVertical = image_margin;
+                }
+
+                if (-1 == mImageIndicatorMarginHorizontal) {
+                    mImageIndicatorMarginHorizontal = image_margin;
+                }
+            } else {
+                mImageIndicatorMarginHorizontal = getResources().getDimensionPixelSize(DefaultConfig.IMAGE_INDICATOR_MARGIN_HORIZONTAL);
+                mImageIndicatorMarginVertical = getResources().getDimensionPixelSize(DefaultConfig.IMAGE_INDICATOR_MARGIN_VERTICAL);
+            }
+
+            mNumIndicatorTextColor = typedArray.getColorStateList(R.styleable.EasyBanner_indicator_num_text_color);
+            if (null == mNumIndicatorTextColor) {
+                mNumIndicatorTextColor = ColorStateList.valueOf(getResources().getColor(DefaultConfig.NUM_INDICATOR_TEXT_COLOR));
+            }
+
+            mNumIndicatorBackgroundDrawable = typedArray.getDrawable(R.styleable.EasyBanner_indicator_num_background);
+            if (null == mNumIndicatorBackgroundDrawable) {
+                mNumIndicatorBackgroundDrawable = getResources().getDrawable(DefaultConfig.NUM_INDICATOR_BACKGROUND);
+            }
+
+            mNumIndicatorTextSize = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_num_text_size, getResources().getDimensionPixelSize(DefaultConfig.NUM_INDICATOR_TEXT_SIZE));
+            mTitleBackgroundDrawable = typedArray.getDrawable(R.styleable.EasyBanner_title_background);
+            if (null == mTitleBackgroundDrawable) {
+                mTitleBackgroundDrawable = new ColorDrawable(getResources().getColor(DefaultConfig.TITLE_BACKGROUND));
+            }
+
+            mTitleTextColor = typedArray.getColorStateList(R.styleable.EasyBanner_title_text_color);
+            if (null == mTitleTextColor) {
+                mTitleTextColor = ColorStateList.valueOf(getResources().getColor(DefaultConfig.TITLE_TEXT_COLOR));
+            }
+
+            mTitleTextSize = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_title_text_size, getResources().getDimensionPixelSize(DefaultConfig.TITLE_TEXT_SIZE));
+            mTitleTextLine = typedArray.getInt(R.styleable.EasyBanner_title_text_line, getResources().getInteger(DefaultConfig.TITLE_TEXT_LINE));
+            int scaleType = typedArray.getInt(R.styleable.EasyBanner_image_scale_type, 6);
+            switch (scaleType) {
+                case 0:
+                    mScaleType = ImageView.ScaleType.MATRIX;
+                    break;
+                case 1:
+                    mScaleType = ImageView.ScaleType.FIT_XY;
+                    break;
+                case 2:
+                    mScaleType = ImageView.ScaleType.FIT_START;
+                    break;
+                case 3:
+                    mScaleType = ImageView.ScaleType.FIT_CENTER;
+                    break;
+                case 4:
+                    mScaleType = ImageView.ScaleType.FIT_END;
+                    break;
+                case 5:
+                    mScaleType = ImageView.ScaleType.CENTER;
+                    break;
+                case 6:
+                    mScaleType = ImageView.ScaleType.CENTER_CROP;
+                    break;
+                case 7:
+                    mScaleType = ImageView.ScaleType.CENTER_INSIDE;
+                    break;
+                default:
+                    mScaleType = ImageView.ScaleType.CENTER_CROP;
+                    break;
+            }
+            isIndicatorDefault = mIndicatorLayoutId == DefaultConfig.INDICATOR_LAYOUT;
+
+            typedArray.recycle();
+        }
+    }
+
+    private void handleDefaultAttr() {
+        Resources res = getResources();
+        isAutoPlay = res.getBoolean(DefaultConfig.AUTO_PLAY);
+        mTimeInterval = res.getInteger(DefaultConfig.TIME_INTERVAL);
+        mDirection = DefaultConfig.DIRECTION;
+        mIndicatorLayoutId = DefaultConfig.INDICATOR_LAYOUT;
+        mIndicatorStyle = DefaultConfig.INDICATOR_STYLE;
+        mIndicatorMode = DefaultConfig.INDICATOR_MODE;
+        mIndicatorGravity = DefaultConfig.INDICATOR_GRAVITY;
+        mTitleGravity = DefaultConfig.TITLE_GRAVITY;
+        mIndicatorBackgroundDrawable = new ColorDrawable(getResources().getColor(DefaultConfig.INDICATOR_BACKGROUND));
+        mImageIndicatorStateBackgroundDrawableId = DefaultConfig.IMAGE_INDICATOR_STATE_BACKGROUND;
 
         DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
         int indicatorSize = dm.widthPixels / 80;
-        mImageIndicatorWidth = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_width, indicatorSize);
-        mImageIndicatorHeight = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_height, indicatorSize);
+        mImageIndicatorWidth = indicatorSize;
+        mImageIndicatorHeight = indicatorSize;
+        mImageIndicatorMarginHorizontal = getResources().getDimensionPixelSize(DefaultConfig.IMAGE_INDICATOR_MARGIN_HORIZONTAL);
+        mImageIndicatorMarginVertical = getResources().getDimensionPixelSize(DefaultConfig.IMAGE_INDICATOR_MARGIN_VERTICAL);
+        mNumIndicatorTextColor = ColorStateList.valueOf(getResources().getColor(DefaultConfig.NUM_INDICATOR_TEXT_COLOR));
+        mNumIndicatorBackgroundDrawable = getResources().getDrawable(DefaultConfig.NUM_INDICATOR_BACKGROUND);
+        mTitleBackgroundDrawable = new ColorDrawable(getResources().getColor(DefaultConfig.TITLE_BACKGROUND));
+        mTitleTextColor = ColorStateList.valueOf(getResources().getColor(DefaultConfig.TITLE_TEXT_COLOR));
 
-        int image_margin = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin, -1);
-        mImageIndicatorMarginHorizontal = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin_horizontal, -1);
-        mImageIndicatorMarginVertical = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_image_margin_vertical, -1);
-
-        if (-1 != image_margin) {
-            if (-1 == mImageIndicatorMarginVertical) {
-                mImageIndicatorMarginVertical = image_margin;
-            }
-
-            if (-1 == mImageIndicatorMarginHorizontal) {
-                mImageIndicatorMarginHorizontal = image_margin;
-            }
-        } else {
-            mImageIndicatorMarginHorizontal = getResources().getDimensionPixelSize(DefaultConfig.IMAGE_INDICATOR_MARGIN_HORIZONTAL);
-            mImageIndicatorMarginVertical = getResources().getDimensionPixelSize(DefaultConfig.IMAGE_INDICATOR_MARGIN_VERTICAL);
-        }
-
-        mNumIndicatorTextColor = typedArray.getColorStateList(R.styleable.EasyBanner_indicator_num_text_color);
-        if (null == mNumIndicatorTextColor) {
-            mNumIndicatorTextColor = ColorStateList.valueOf(getResources().getColor(DefaultConfig.NUM_INDICATOR_TEXT_COLOR));
-        }
-
-        mNumIndicatorBackgroundDrawable = typedArray.getDrawable(R.styleable.EasyBanner_indicator_num_background);
-        if (null == mNumIndicatorBackgroundDrawable) {
-            mNumIndicatorBackgroundDrawable = getResources().getDrawable(DefaultConfig.NUM_INDICATOR_BACKGROUND);
-        }
-
-        mNumIndicatorTextSize = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_indicator_num_text_size, getResources().getDimensionPixelSize(DefaultConfig.NUM_INDICATOR_TEXT_SIZE));
-        mTitleBackgroundDrawable = typedArray.getDrawable(R.styleable.EasyBanner_title_background);
-        if (null == mTitleBackgroundDrawable) {
-            mTitleBackgroundDrawable = new ColorDrawable(getResources().getColor(DefaultConfig.TITLE_BACKGROUND));
-        }
-
-        mTitleTextColor = typedArray.getColorStateList(R.styleable.EasyBanner_title_text_color);
-        if (null == mTitleTextColor) {
-            mTitleTextColor = ColorStateList.valueOf(getResources().getColor(DefaultConfig.TITLE_TEXT_COLOR));
-        }
-
-        mTitleTextSize = typedArray.getDimensionPixelSize(R.styleable.EasyBanner_title_text_size, getResources().getDimensionPixelSize(DefaultConfig.TITLE_TEXT_SIZE));
-        mTitleTextLine = typedArray.getInt(R.styleable.EasyBanner_title_text_line, getResources().getInteger(DefaultConfig.TITLE_TEXT_LINE));
-        int scaleType = typedArray.getInt(R.styleable.EasyBanner_image_scale_type, 6);
-        switch (scaleType) {
-            case 0:
-                mScaleType = ImageView.ScaleType.MATRIX;
-                break;
-            case 1:
-                mScaleType = ImageView.ScaleType.FIT_XY;
-                break;
-            case 2:
-                mScaleType = ImageView.ScaleType.FIT_START;
-                break;
-            case 3:
-                mScaleType = ImageView.ScaleType.FIT_CENTER;
-                break;
-            case 4:
-                mScaleType = ImageView.ScaleType.FIT_END;
-                break;
-            case 5:
-                mScaleType = ImageView.ScaleType.CENTER;
-                break;
-            case 6:
-                mScaleType = ImageView.ScaleType.CENTER_CROP;
-                break;
-            case 7:
-                mScaleType = ImageView.ScaleType.CENTER_INSIDE;
-                break;
-            default:
-                mScaleType = ImageView.ScaleType.CENTER_CROP;
-                break;
-        }
+        mTitleTextSize = res.getDimensionPixelSize(DefaultConfig.TITLE_TEXT_SIZE);
+        mTitleTextLine = res.getInteger(DefaultConfig.TITLE_TEXT_LINE);
+        mScaleType = ImageView.ScaleType.CENTER_CROP;
         isIndicatorDefault = mIndicatorLayoutId == DefaultConfig.INDICATOR_LAYOUT;
-
-        typedArray.recycle();
     }
 
     public EasyBanner addOnPageChangeListener(@NonNull OnPageChangeListener listener) {
@@ -525,12 +561,12 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     }
 
     public EasyBanner setImageIndicatorStateBackgroundResource(@DrawableRes int id) {
-        mImageIndicatorStateBackgroundId = id;
+        mImageIndicatorStateBackgroundDrawableId = id;
         if (isIndicatorDefault && STATUS_NOT_START != mStatus) {
             for (int i = 0; i < mImageIndicator.getChildCount(); i ++) {
-                ImageView iv = (ImageView) mImageIndicator.getChildAt(i);
-                if (null != iv) {
-                    iv.setImageResource(mImageIndicatorStateBackgroundId);
+                RadioButton rb = (RadioButton) mImageIndicator.getChildAt(i);
+                if (null != rb) {
+                    rb.setBackgroundResource(id);
                 }
             }
         }
@@ -549,9 +585,9 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 params.height = mImageIndicatorHeight;
 
                 for (int i = 0; i < mImageIndicator.getChildCount(); i++) {
-                    ImageView iv = (ImageView) mImageIndicator.getChildAt(i);
-                    if (null != iv) {
-                        iv.setLayoutParams(params);
+                    View rb = mImageIndicator.getChildAt(i);
+                    if (null != rb) {
+                        rb.setLayoutParams(params);
                     }
                 }
             }
@@ -570,9 +606,9 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 params.setMargins(mImageIndicatorMarginHorizontal, mImageIndicatorMarginVertical, mImageIndicatorMarginHorizontal, mImageIndicatorMarginVertical);
 
                 for (int i = 0; i < mImageIndicator.getChildCount(); i++) {
-                    ImageView iv = (ImageView) mImageIndicator.getChildAt(i);
-                    if (null != iv) {
-                        iv.setLayoutParams(params);
+                    View rb = mImageIndicator.getChildAt(i);
+                    if (null != rb) {
+                        rb.setLayoutParams(params);
                     }
                 }
             }
@@ -776,24 +812,6 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
 
         return this;
     }
-    
-    public EasyBanner setImageIndicatorGravity(@IndicatorGravity int gravity) {
-        
-        if (null != mImageIndicator) {
-            mImageIndicator.setGravity(gravity);
-        }
-        
-        return this;
-    }
-
-    public EasyBanner setTitleIndicatorGravity(@IndicatorGravity int gravity) {
-        
-        if (null != mTitleIndicator) {
-            mTitleIndicator.setGravity(gravity);
-        }
-        
-        return this;
-    }
 
     public TextView getNumIndicator() {
         return mNumIndicator;
@@ -814,13 +832,14 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         params.setMargins(mImageIndicatorMarginHorizontal, mImageIndicatorMarginVertical, mImageIndicatorMarginHorizontal, mImageIndicatorMarginVertical);
 
         for (int i = 0; i < mAdapter.getData().size(); i ++) {
-            ImageView iv = new ImageView(getContext());
-            iv.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-            iv.setLayoutParams(params);
-            iv.setImageResource(mImageIndicatorStateBackgroundId);
-            iv.setSelected(false);
-            iv.setId(BASE_INDICATOR_ID + i);
-            mImageIndicator.addView(iv);
+            RadioButton rb = new RadioButton(getContext());
+            rb.setLayoutParams(params);
+            rb.setButtonDrawable(null);
+            rb.setBackgroundResource(mImageIndicatorStateBackgroundDrawableId);
+            rb.setChecked(false);
+            rb.setEnabled(false);
+            rb.setId(BASE_INDICATOR_ID + i);
+            mImageIndicator.addView(rb);
         }
     }
 
@@ -881,6 +900,9 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         mNumIndicator.setVisibility(GONE);
         mTitleIndicator.setVisibility(GONE);
         updateIndicatorIndex(mCurrentIndex);
+        if (STYLE_NONE != mIndicatorStyle) {
+            mIndicatorContainer.setVisibility(VISIBLE);
+        }
 
         switch (mIndicatorStyle) {
             case STYLE_IMAGE_INDICATOR:
@@ -902,6 +924,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
                 break;
             case STYLE_NONE:
             default:
+                mIndicatorContainer.setVisibility(GONE);
                 break;
         }
     }
@@ -936,15 +959,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     
     private void updateCircleIndicator(int realPos) {
         if (null != mImageIndicator) {
-            ImageView cancel = mImageIndicator.findViewById(BASE_INDICATOR_ID + mAdapter.getRealPosition(mCurrentIndex));
-            if (null != cancel) {
-                cancel.setSelected(false);
-            }
-        
-            ImageView select = mImageIndicator.findViewById(BASE_INDICATOR_ID + realPos);
-            if (null != select) {
-                select.setSelected(true);
-            }
+            mImageIndicator.check(BASE_INDICATOR_ID + realPos);
         }
     }
     
@@ -966,7 +981,6 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         switch(mStatus) {
             case STATUS_NOT_START:
                 initView();
-                mStatus = isAutoPlay ? STATUS_AUTO_PLAYING : STATUS_MANUAL_LAYING;
                 break;
             case STATUS_PAUSED:
             case STATUS_STOPPED:
@@ -980,6 +994,8 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
             default:
                 shouldStart = false;
         }
+
+        mStatus = isAutoPlay ? STATUS_AUTO_PLAYING : STATUS_MANUAL_LAYING;
 
         if (shouldStart) {
             mHandler.removeCallbacks(mLoopRunnable);
@@ -1092,7 +1108,7 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
     }
 
     /**
-     * 事件分发，手指按在banner上时停止自动滚动
+     * 事件分发，有出没事件时停止自动滚动
      * @param ev
      * @return
      */
@@ -1114,13 +1130,11 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
 
         private static final int TAG_KEY = -100;
         private static final int DEFAULT_TYPE = -1;
-        private static final int KEY_UNUSED = -1;
 
         private List<T> mData = new ArrayList<>();
-
         private List<T> mMockData;
 
-        private HashMap<Number, HashMap<Number, View>> mCachedViewHolders = new HashMap<>();
+        private HashMap<Number, List<View>> mCachedViews = new HashMap<>();
 
         private OnBannerItemClickListener mOnClickListener;
         private OnBannerItemLongClickListener mOnLongClickListener;
@@ -1130,20 +1144,31 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
         }
 
         @Override
+        public final int getCount() {
+            return mMockData.size();
+        }
+
+        public int getViewType(int position) {
+            return DEFAULT_TYPE;
+        }
+
+        @Override
         @NonNull
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
-
-            int type = getViewType(position);
-            HashMap<Number, View> tempMap = mCachedViewHolders.get(type);
+            int realPos = getRealPosition(position);
+            int type = getViewType(realPos);
+            List<View> temp = mCachedViews.get(type);
 
             View view = null;
-            if (null != tempMap) {
-                view = tempMap.get(KEY_UNUSED);
-                tempMap.remove(KEY_UNUSED);
+            if (null == temp) {
+                temp = new ArrayList<>();
+                mCachedViews.put(type, temp);
+            } else if (temp.size() > 0){
+                view = temp.remove(0);
             }
 
             if (null == view) {
-                view = onCreateView(container, getRealPosition(position), type);
+                view = onCreateView(container, getRealPosition(position), getViewType(getRealPosition(position)));
             }
 
             container.addView(view);
@@ -1160,27 +1185,15 @@ public final class EasyBanner extends FrameLayout implements OnPageChangeListene
             View view = (View) object;
             container.removeView(view);
 
-            int type = getViewType(position);
-            HashMap<Number, View> tempMap = mCachedViewHolders.get(type);
-            if (null == tempMap) {
-                tempMap = new HashMap<>();
-                mCachedViewHolders.put(type, tempMap);
-            }
-            tempMap.put(KEY_UNUSED, view);
+            int realPos = getRealPosition(position);
+            int type = getViewType(realPos);
+            List<View> temp = mCachedViews.get(type);
+            temp.add(view);
         }
 
         @Override
         public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
             return view == object;
-        }
-
-        @Override
-        public final int getCount() {
-            return mMockData.size();
-        }
-
-        public int getViewType(int position) {
-            return DEFAULT_TYPE;
         }
 
         @NonNull

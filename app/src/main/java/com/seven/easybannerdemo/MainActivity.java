@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -21,7 +22,7 @@ import com.seven.easybanner.model.DataModel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, ImageBannerAdapter.IImageLoader, EasyBanner.OnBannerItemClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, ImageBannerAdapter.IImageLoader, EasyBanner.OnBannerItemClickListener, ViewPager.OnPageChangeListener {
 
     private EasyBanner mBanner;
     private Button mBtnPause;
@@ -47,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBanner = findViewById(R.id.easy_banner);
         mBanner.setAdapter(new ImageBannerAdapter<DataModel>(DataHolder.models, this))
                 .setOnBannerItemClickListener(this)
+                .setAutoPlay(true)
+                .addOnPageChangeListener(this)
                 .start();
 
         ListView listView = findViewById(R.id.list_view);
@@ -146,16 +149,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toast.makeText(this, model.getDescription() + " position: " + position, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) { }
+
+    @Override
+    public void onPageSelected(int position) { }
+
+    @Override
+    public void onPageScrollStateChanged(int state) { }
+
     private class MyTransformer implements ViewPager.PageTransformer {
+        private static final float MIN_SCALE = 0.85f;
+        private static final float MIN_ALPHA = 0.5f;
 
         @Override
-        public void transformPage(@NonNull View page, float position) {
-            final float scale = position < 0 ? position + 1f : Math.abs(1f - position);
-            page.setScaleX(scale);
-            page.setScaleY(scale);
-            page.setPivotX(page.getWidth() * 0.5f);
-            page.setPivotY(page.getHeight() * 0.5f);
-            page.setAlpha(position < -1f || position > 1f ? 0f : 1f - (scale - 1f));
+        public void transformPage(@NonNull View view, float position) {
+            int pageWidth = view.getWidth();
+            int pageHeight = view.getHeight();
+
+            if (position < -1) { // [-Infinity,-1)
+                // This page is way off-screen to the left.
+                //
+                view.setAlpha(0);
+
+            } else if (position <= 1) { // [-1,1]
+                //[0,1]
+                // Modify the default slide transition to shrink the page as well
+                float scaleFactor = Math.max(MIN_SCALE, 1 - Math.abs(position));//缩放的值,如果下于0.75就取0.75
+                float vertMargin = pageHeight * (1 - scaleFactor) / 2;
+                float horzMargin = pageWidth * (1 - scaleFactor) / 2;
+                if (position < 0) {
+                    //[-1,0]
+                    view.setTranslationX(horzMargin - vertMargin / 2);
+                } else {
+                    //[0,1]
+                    view.setTranslationX(-horzMargin + vertMargin / 2);
+                }
+
+                // Scale the page down (between MIN_SCALE and 1)
+                view.setScaleX(scaleFactor);
+                view.setScaleY(scaleFactor);
+
+                // Fade the page relative to its size.
+                view.setAlpha(MIN_ALPHA +
+                        (scaleFactor - MIN_SCALE) /
+                                (1 - MIN_SCALE) * (1 - MIN_ALPHA));
+
+            } else { // (1,+Infinity]
+                //[>1]
+                // This page is way off-screen to the right.
+                view.setAlpha(0);
+            }
         }
     }
 }
